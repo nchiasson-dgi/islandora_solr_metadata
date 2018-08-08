@@ -1,15 +1,5 @@
 <?php
-
-/**
- * @file
- * Contains \Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataDeleteConfigForm.
- */
-
-namespace Drupal\islandora_solr_metadata\Form;
-
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
+namespace Drupal\islandora_solr_metadata;
 
 class IslandoraSolrMetadataDeleteConfigForm extends FormBase {
 
@@ -40,4 +30,3 @@ class IslandoraSolrMetadataDeleteConfigForm extends FormBase {
   }
 
 }
-?>

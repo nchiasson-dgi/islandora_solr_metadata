@@ -1,15 +1,5 @@
 <?php
-
-/**
- * @file
- * Contains \Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigFieldForm.
- */
-
-namespace Drupal\islandora_solr_metadata\Form;
-
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
+namespace Drupal\islandora_solr_metadata;
 
 class IslandoraSolrMetadataConfigFieldForm extends FormBase {
 
@@ -134,4 +124,3 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
   }
 
 }
-?>

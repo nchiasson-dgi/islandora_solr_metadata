@@ -1,11 +1,5 @@
-<?php /**
- * @file
- * Contains \Drupal\islandora_solr_metadata\Controller\DefaultController.
- */
-
-namespace Drupal\islandora_solr_metadata\Controller;
-
-use Drupal\Core\Controller\ControllerBase;
+<?php
+namespace Drupal\islandora_solr_metadata;
 
 /**
  * Default controller for the islandora_solr_metadata module.
