@@ -1,4 +1,4 @@
-# Islandora Solr Metadata [![Build Status](https://travis-ci.org/Islandora/islandora_solr_metadata.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_solr_metadata)
+# Islandora Solr Metadata
 
 ## Introduction
 
@@ -8,29 +8,28 @@ Provides an interface to construct configurations used for displaying metadata o
 
 This module requires the following modules/libraries:
 
-* [Islandora](https://github.com/islandora/islandora)
+* [Islandora](https://github.com/discoverygarden/islandora)
 * [Tuque](https://github.com/islandora/tuque)
-* [Islandora Solr](https://github.com/Islandora/islandora_solr_search)
+* [Islandora Solr](https://github.com/discoverygarden/islandora_solr_search)
 
 ## Installation
 
-Install as usual, see [this](https://drupal.org/documentation/install/modules-themes/modules-7) for further information.
+Install as
+[usual](https://www.drupal.org/docs/8/extending-drupal-8/installing-drupal-8-modules).
 
 ## Configuration
 
-The Islandora Solr Metadata module is used by selecting it to be the default metadata display viewer at Administration » Islandora » Metadata Display (admin/islandora/metadata).
+The Islandora Solr Metadata module is used by selecting it to be the default
+metadata display viewer at Manage » Configuration » Metadata Display
+(admin/config/islandora/metadata).
 
 ![Configuration](https://camo.githubusercontent.com/f5a44185e2c1e7f81e0f76d10a885640e2281479/687474703a2f2f692e696d6775722e636f6d2f6661356f3566582e706e67)
 
-General configuration and metadata field configurations is available at Administration » Islandora » Solr Index » Solr Index (admin/islandora/search/islandora_solr/metadata).
+General configuration and metadata field configurations is available at
+Manage » Configuration » Solr Index » Metadata Display
+(admin/config/islandora/search/metadata).
 
 ![Configuration](https://camo.githubusercontent.com/ae1155798564091ff4623aebe039ef962f8ce9ff/687474703a2f2f692e696d6775722e636f6d2f724b65764e4c632e706e67)
-
-## Notes
-
-* To use Solr Metadata with Scholar's citation/thesis cModels, please enable the `Use Standard Metadata Display` option in Administration » Islandora » Solution pack configuration » Scholar (/admin/islandora/solution_pack_config/scholar).
-
-![Configuration](https://cloud.githubusercontent.com/assets/2052902/25194782/7e9bef70-2509-11e7-9167-737ea21982d0.png)
 
 ### Customization
 
@@ -48,20 +47,27 @@ This module's documentation is also available at [our wiki](https://wiki.duraspa
 
 ## Troubleshooting/Issues
 
-Having problems or solved a problem? Check out the Islandora google groups for a solution.
+Having problems or solved one? Create an issue, check out the Islandora Google
+groups.
 
-* [Islandora Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora)
-* [Islandora Dev Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora-dev)
+* [Users](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora)
+* [Devs](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora-dev)
+
+or contact [discoverygarden](http://support.discoverygarden.ca).
 
 ## Maintainers/Sponsors
 
 Current maintainers:
 
-* [Jordan Dukart](https://github.com/jordandukart)
+* [discoverygarden](http://www.discoverygarden.ca)
 
 ## Development
 
-If you would like to contribute to this module, please check out [CONTRIBUTING.md](CONTRIBUTING.md). In addition, we have helpful [Documentation for Developers](https://github.com/Islandora/islandora/wiki#wiki-documentation-for-developers) info, as well as our [Developers](http://islandora.ca/developers) section on the [Islandora.ca](http://islandora.ca) site.
+If you would like to contribute to this module, please check out the helpful
+[Documentation](https://github.com/Islandora/islandora/wiki#wiki-documentation-for-developers),
+[Developers](http://islandora.ca/developers) section on Islandora.ca and create
+an issue, pull request and or contact
+[discoverygarden](http://support.discoverygarden.ca).
 
 ## License
 
