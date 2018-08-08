@@ -233,7 +233,7 @@ function islandora_solr_metadata_display_callback(AbstractObject $object, $print
     'print' => $print,
     'associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
   );
-  drupal_alter('islandora_solr_metadata_display_elements', $elements);
+  \Drupal::moduleHandler()->alter('islandora_solr_metadata_display_elements', $elements);
   if (count($elements['associations']) > 0) {
     return theme('islandora_solr_metadata_display', $elements);
   }
@@ -257,7 +257,7 @@ function islandora_solr_metadata_description_callback(AbstractObject $object) {
     'islandora_object' => $object,
     'associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
   );
-  drupal_alter('islandora_solr_metadata_description_elements', $elements);
+  \Drupal::moduleHandler()->alter('islandora_solr_metadata_description_elements', $elements);
   if (count($elements['associations']) > 0) {
     return theme('islandora_solr_metadata_description', $elements);
   }

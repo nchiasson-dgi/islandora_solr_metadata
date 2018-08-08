@@ -70,7 +70,7 @@ function islandora_solr_metadata_get_associations() {
   $result = db_query('SELECT configuration_id, configuration_name, machine_name FROM {islandora_solr_metadata_associations}');
   foreach ($result as $record) {
     $config_name = $record->configuration_name;
-    if (module_exists('i18n_string')) {
+    if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
       $i18n_id = islandora_solr_metadata_config_i18n_id($record->configuration_id);
       $config_name = i18n_string_translate($i18n_id, $config_name);
     }
@@ -138,7 +138,7 @@ function islandora_solr_metadata_add_configuration($configuration_name, $machine
     )
     ->execute();
 
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $i18n_id = islandora_solr_metadata_config_i18n_id($id);
     i18n_string_update($i18n_id, $configuration_name);
   }
@@ -181,7 +181,7 @@ function islandora_solr_metadata_get_fields($configuration_id, $translate = TRUE
   };
   $fields = array_map($deserialize_data, $fields);
 
-  if ($translate && module_exists('i18n_string')) {
+  if ($translate && \Drupal::moduleHandler()->moduleExists('i18n_string')) {
     foreach ($fields as $field => &$field_info) {
       $i18n_id = islandora_solr_metadata_field_i18n_id($configuration_id, $field);
       $field_info['display_label'] = i18n_string_translate($i18n_id, $field_info['display_label']);
@@ -206,7 +206,7 @@ function islandora_solr_metadata_retrieve_configuration_name($configuration_id) 
   $result = db_query('SELECT configuration_name from {islandora_solr_metadata_associations} WHERE configuration_id = :configuration_id', array(':configuration_id' => $configuration_id));
   $config_name = $result->fetchColumn();
 
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $i18n_id = islandora_solr_metadata_config_i18n_id($configuration_id);
     $config_name = i18n_string_translate($i18n_id, $config_name);
   }
@@ -236,7 +236,7 @@ function islandora_solr_metadata_retrieve_configuration_from_machine_name($machi
  *   The ID for a configuration to remove.
  */
 function islandora_solr_metadata_delete_configuration($configuration_id) {
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $fields = islandora_solr_metadata_get_fields($configuration_id, FALSE);
     foreach (array_keys($fields) as $field) {
       $i18n_id = islandora_solr_metadata_field_i18n_id($configuration_id, $field);
@@ -251,7 +251,7 @@ function islandora_solr_metadata_delete_configuration($configuration_id) {
     ->condition('configuration_id', $configuration_id)
     ->execute();
 
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $i18n_id = islandora_solr_metadata_config_i18n_id($configuration_id);
     $i18n_description_id = islandora_solr_metadata_description_i18n_id($configuration_id);
     i18n_string_remove($i18n_id);
@@ -425,7 +425,7 @@ function islandora_solr_metadata_update_fields($configuration_id, $fields) {
 function islandora_solr_metadata_retrieve_description($configuration_id, $translate = TRUE) {
   $result = db_query('SELECT description_field, description_label, description_data FROM {islandora_solr_metadata_associations} WHERE configuration_id = :configuration_id', array(':configuration_id' => $configuration_id));
   $description = $result->fetchAssoc();
-  if ($translate && module_exists('i18n_string')) {
+  if ($translate && \Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $i18n_id = islandora_solr_metadata_description_i18n_id($configuration_id);
     $description['description_label'] = i18n_string_translate($i18n_id, $description['description_label']);
   }
@@ -480,7 +480,7 @@ function islandora_solr_metadata_update_description($configuration_id, $descript
  *   - solr_field
  */
 function islandora_solr_metadata_update_i18n_strings($id, $fields) {
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     foreach ($fields as $field => $info) {
       $i18n_id = islandora_solr_metadata_field_i18n_id($id, $info['solr_field']);
       i18n_string_update($i18n_id, $info['display_label']);
@@ -502,7 +502,7 @@ function islandora_solr_metadata_update_i18n_strings($id, $fields) {
  *   - solr_field
  */
 function islandora_solr_metadata_remove_i18n_strings($id, $fields) {
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     foreach ($fields as $field => $info) {
       $i18n_id = islandora_solr_metadata_field_i18n_id($id, $info['solr_field']);
       i18n_string_remove($i18n_id);
@@ -519,7 +519,7 @@ function islandora_solr_metadata_remove_i18n_strings($id, $fields) {
  *   The description label that is being added or updated.
  */
 function islandora_solr_metadata_update_i18n_description($id, $description_label) {
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $i18n_id = islandora_solr_metadata_description_i18n_id($id);
     i18n_string_update($i18n_id, $description_label);
   }
@@ -532,7 +532,7 @@ function islandora_solr_metadata_update_i18n_description($id, $description_label
  *   An ID for the configuration.
  */
 function islandora_solr_metadata_remove_i18n_description($id) {
-  if (module_exists('i18n_string')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
     $i18n_id = islandora_solr_metadata_description_i18n_id($id);
     i18n_string_remove($i18n_id);
   }

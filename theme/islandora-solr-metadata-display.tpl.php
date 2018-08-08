@@ -19,7 +19,7 @@
  */
 ?>
 <?php if ($found):
-  if (!(empty($solr_fields) && variable_get('islandora_solr_metadata_omit_empty_values', FALSE))):?>
+  if (!(empty($solr_fields) && \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values'))):?>
 <fieldset <?php $print ? print('class="islandora islandora-metadata"') : print('class="islandora islandora-metadata collapsible collapsed"');?>>
   <legend><span class="fieldset-legend"><?php print t('Details'); ?></span></legend>
   <div class="fieldset-wrapper">

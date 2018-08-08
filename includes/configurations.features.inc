@@ -74,7 +74,7 @@ function islandora_solr_metadata_configurations_features_rebuild($module_name) {
         // Update.
         // Delete given field and cmodels.
         $config_id = $exists;
-        if (module_exists('i18n_string')) {
+        if (\Drupal::moduleHandler()->moduleExists('i18n_string')) {
           $fields = islandora_solr_metadata_get_fields($config_id, FALSE);
           foreach (array_keys($fields) as $field) {
             $i18n_id = islandora_solr_metadata_field_i18n_id($config_id, $field);

@@ -332,7 +332,7 @@ function islandora_solr_metadata_config_form_submit($form, $form_state) {
       )));
     };
     $rows = isset($form_state['values']['islandora_solr_metadata_fields']['table_wrapper']['table']['table']['rows']) ? $form_state['values']['islandora_solr_metadata_fields']['table_wrapper']['table']['table']['rows'] : array();
-    $fields_fs_mapped = array_map($remove_form_specifics, drupal_array_merge_deep($form_state['field_data'], $rows));
+    $fields_fs_mapped = array_map($remove_form_specifics, \Drupal\Component\Utility\NestedArray::mergeDeep($form_state['field_data'], $rows));
     $fields_db = islandora_solr_metadata_get_fields($configuration_id);
 
     $cmodels_db = islandora_solr_metadata_get_cmodels($configuration_id);
@@ -439,8 +439,8 @@ function islandora_solr_metadata_management($data) {
           '#type' => 'checkbox',
           '#default_value' => isset($field['remove']) ? $field['remove'] : FALSE,
         ),
-        'solr_field_markup' => array('#markup' => filter_xss($field['solr_field'])),
-        'label' => array('#markup' => empty($field['display_label']) ? filter_xss($field['solr_field']) : filter_xss($field['display_label'])),
+        'solr_field_markup' => array('#markup' => \Drupal\Component\Utility\Xss::filter($field['solr_field'])),
+        'label' => array('#markup' => empty($field['display_label']) ? \Drupal\Component\Utility\Xss::filter($field['solr_field']) : \Drupal\Component\Utility\Xss::filter($field['display_label'])),
         'operations' => array(
           'edit' => array(
             '#access' => isset($field['ajax-volatile']) ? !$field['ajax-volatile'] : TRUE,
@@ -493,7 +493,7 @@ function islandora_solr_metadata_config_field_form($form, &$form_state, $config_
       $field_info = $fields[$field_name];
     }
     $exists = FALSE;
-    $looked_up = drupal_array_get_nested_value($field_info, (array) $value, $exists);
+    $looked_up = \Drupal\Component\Utility\NestedArray::getValue($field_info, (array) $value, $exists);
     return $exists ? $looked_up : $default;
   };
 
