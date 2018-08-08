@@ -66,7 +66,7 @@ function islandora_solr_metadata_configurations_features_revert($module_name) {
  */
 function islandora_solr_metadata_configurations_features_rebuild($module_name) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  $values = module_invoke($module_name, 'islandora_solr_metadata_configurations_default_fields');
+  $values = \Drupal::moduleHandler()->invoke($module_name, 'islandora_solr_metadata_configurations_default_fields');
   if (!empty($values)) {
     foreach ($values as $machine_name => $config_info) {
       $exists = islandora_solr_metadata_retrieve_configuration_from_machine_name($machine_name);

@@ -114,7 +114,7 @@ function islandora_solr_metadata_permission() {
  */
 function islandora_solr_metadata_access($configuration_id) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  return islandora_solr_metadata_configuration_exists($configuration_id) && user_access('administer islandora_solr_metadata');
+  return islandora_solr_metadata_configuration_exists($configuration_id) && \Drupal::currentUser()->hasPermission('administer islandora_solr_metadata');
 }
 
 /**
@@ -235,7 +235,16 @@ function islandora_solr_metadata_display_callback(AbstractObject $object, $print
   );
   \Drupal::moduleHandler()->alter('islandora_solr_metadata_display_elements', $elements);
   if (count($elements['associations']) > 0) {
-    return theme('islandora_solr_metadata_display', $elements);
+    // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// return theme('islandora_solr_metadata_display', $elements);
+
   }
   else {
     return FALSE;
@@ -259,7 +268,16 @@ function islandora_solr_metadata_description_callback(AbstractObject $object) {
   );
   \Drupal::moduleHandler()->alter('islandora_solr_metadata_description_elements', $elements);
   if (count($elements['associations']) > 0) {
-    return theme('islandora_solr_metadata_description', $elements);
+    // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// return theme('islandora_solr_metadata_description', $elements);
+
   }
   else {
     return FALSE;

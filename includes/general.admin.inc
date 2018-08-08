@@ -9,7 +9,7 @@
  * Form building function for general config.
  */
 function islandora_solr_metadata_general_admin_form($form, &$form_state) {
-  form_load_include($form_state, 'inc', 'islandora_solr_metadata', 'includes/general.admin');
+  $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/general.admin');
 
   $form += array(
     'islandora_solr_metadata_omit_empty_values' => array(
@@ -53,6 +53,11 @@ function islandora_solr_metadata_general_admin_form_submit(&$form, &$form_state)
   );
 
   foreach ($variables as $variable) {
-    variable_set($variable, $form_state['values'][$variable]);
+    // @FIXME
+// // @FIXME
+// // The correct configuration object could not be determined. You'll need to
+// // rewrite this call manually.
+// variable_set($variable, $form_state['values'][$variable]);
+
   }
 }

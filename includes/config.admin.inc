@@ -22,26 +22,44 @@ function islandora_solr_metadata_admin_form($form, &$form_state) {
   $rows = array();
   foreach ($associations as $association) {
     $cmodels = islandora_solr_metadata_get_cmodels($association['id']);
-    $rows[] = array(
-      l($association['name'], "admin/islandora/search/islandora_solr_metadata/config/{$association['id']}"),
-      empty($cmodels) ? t('No content models currently associated') : theme('item_list', array(
-        'items' => array_keys($cmodels),
-      )),
-      $association['machine_name'],
-    );
+    // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $rows[] = array(
+//       l($association['name'], "admin/islandora/search/islandora_solr_metadata/config/{$association['id']}"),
+//       empty($cmodels) ? t('No content models currently associated') : theme('item_list', array(
+//         'items' => array_keys($cmodels),
+//       )),
+//       $association['machine_name'],
+//     );
+
   }
-  $form['table'] = array(
-    '#title' => t('Solr metadata associations'),
-    '#markup' => theme('table', array(
-      'header' => array(
-        t('Name'),
-        t('Associated content models'),
-        t('Machine name'),
-      ),
-      'rows' => $rows,
-      'empty' => t('No associations currently present.'),
-    )),
-  );
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $form['table'] = array(
+//     '#title' => t('Solr metadata associations'),
+//     '#markup' => theme('table', array(
+//       'header' => array(
+//         t('Name'),
+//         t('Associated content models'),
+//         t('Machine name'),
+//       ),
+//       'rows' => $rows,
+//       'empty' => t('No associations currently present.'),
+//     )),
+//   );
+
   $form['add_configuration'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add a configuration'),

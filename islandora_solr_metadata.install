@@ -166,7 +166,13 @@ function islandora_solr_metadata_update_7102() {
     'serialize' => TRUE,
     'description' => 'Serialized associative array with misc display parameters.',
   ));
-  $fields_to_remove = drupal_map_assoc(array(
+  $fields_to_remove = array_combine(array(
+      'display_label',
+      'hyperlink',
+      'date_format',
+      'permissions',
+      'structured_data',
+  ), array(
       'display_label',
       'hyperlink',
       'date_format',
@@ -192,7 +198,7 @@ function islandora_solr_metadata_update_7102() {
  * Create a new input format to use for filtering.
  */
 function islandora_solr_metadata_update_7103() {
-  $t = get_t();
+  $t = 't';
   $format = filter_format_load('filtered_html');
   $format->format = 'islandora_solr_metadata_filtered_html';
   $format->name = $t('Islandora Solr Metadata Filtered HTML');
@@ -232,7 +238,7 @@ function islandora_solr_metadata_update_7104() {
  * Implements hook_install().
  */
 function islandora_solr_metadata_install() {
-  $t = get_t();
+  $t = 't';
   $format = filter_format_load('filtered_html');
   $format->format = 'islandora_solr_metadata_filtered_html';
   $format->name = $t('Islandora Solr Metadata Filtered HTML');

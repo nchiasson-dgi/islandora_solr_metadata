@@ -18,8 +18,8 @@
  *   An array representing the configuration form.
  */
 function islandora_solr_metadata_config_form($form, &$form_state, $configuration_id) {
-  form_load_include($form_state, 'inc', 'islandora', 'includes/content_model.autocomplete');
-  form_load_include($form_state, 'inc', 'islandora_solr_metadata', 'includes/db');
+  $form_state->loadInclude('islandora', 'inc', 'includes/content_model.autocomplete');
+  $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
   $field_to_add = FALSE;
   $cmodel_to_add = FALSE;
 
@@ -325,7 +325,11 @@ function islandora_solr_metadata_config_form_submit($form, $form_state) {
   if ($form_state['clicked_button']['#value'] == 'Save configuration') {
     // Grab existing entries first for comparison.
     $remove_form_specifics = function ($field) {
-      return array_diff_key($field, drupal_map_assoc(array(
+      return array_diff_key($field, array_combine(array(
+        'ajax-volatile',
+        'remove',
+        'remove_field',
+      ), array(
         'ajax-volatile',
         'remove',
         'remove_field',
@@ -484,7 +488,7 @@ function islandora_solr_metadata_management($data) {
  * Form building function; allow configuration of a particular field.
  */
 function islandora_solr_metadata_config_field_form($form, &$form_state, $config_id, $escaped_field_name) {
-  form_load_include($form_state, 'inc', 'islandora_solr', 'includes/utilities');
+  $form_state->loadInclude('islandora_solr', 'inc', 'includes/utilities');
   $field_name = islandora_solr_restore_slashes($escaped_field_name);
   $get_default = function ($value, $default = '') use ($config_id, $field_name) {
     static $field_info = NULL;

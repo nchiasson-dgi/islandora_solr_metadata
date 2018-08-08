@@ -26,13 +26,29 @@ function theme_islandora_solr_metadata_management_table(array $variables) {
     );
   }
   $table_id = 'entry-order';
-  $output = theme('table', array(
-    'header' => $table['#header'],
-    'rows' => $rows,
-    'attributes' => array('id' => $table_id),
-    'empty' => t('There are no entries available.')));
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $output = theme('table', array(
+//     'header' => $table['#header'],
+//     'rows' => $rows,
+//     'attributes' => array('id' => $table_id),
+//     'empty' => t('There are no entries available.')));
+
   $output .= drupal_render_children($table);
-  drupal_add_tabledrag($table_id, 'order', 'sibling', $weight_class);
+  // @FIXME
+// TableDrag is now attached with the #tabledrag property of certain render
+// arrays. drupal_add_tabledrag() is now internal and should never be called directly.
+// 
+// 
+// @see https://www.drupal.org/node/2160571
+// drupal_add_tabledrag($table_id, 'order', 'sibling', $weight_class);
+
   return $output;
 }
 
@@ -52,8 +68,24 @@ function theme_islandora_solr_metadata_management_table(array $variables) {
 function template_preprocess_islandora_solr_metadata_display(array &$variables) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora', 'includes/utilities');
-  drupal_add_js('misc/form.js');
-  drupal_add_js('misc/collapse.js');
+  // @FIXME
+// The Assets API has totally changed. CSS, JavaScript, and libraries are now
+// attached directly to render arrays using the #attached property.
+// 
+// 
+// @see https://www.drupal.org/node/2169605
+// @see https://www.drupal.org/node/2408597
+// drupal_add_js('misc/form.js');
+
+  // @FIXME
+// The Assets API has totally changed. CSS, JavaScript, and libraries are now
+// attached directly to render arrays using the #attached property.
+// 
+// 
+// @see https://www.drupal.org/node/2169605
+// @see https://www.drupal.org/node/2408597
+// drupal_add_js('misc/collapse.js');
+
 
   $object = $variables['islandora_object'];
   $db_fields = array();
@@ -249,7 +281,15 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
             $value = \Drupal\Component\Utility\Unicode::truncate($value, $truncation['max_length'], $truncation['word_safe'], $truncation['ellipsis'], $truncation['min_wordsafe_length']);
             if ($value !== $original_value) {
               $mod_path = drupal_get_path('module', 'islandora_solr');
-              drupal_add_js("$mod_path/js/truncation-toggle.js");
+              // @FIXME
+// The Assets API has totally changed. CSS, JavaScript, and libraries are now
+// attached directly to render arrays using the #attached property.
+// 
+// 
+// @see https://www.drupal.org/node/2169605
+// @see https://www.drupal.org/node/2408597
+// drupal_add_js("$mod_path/js/truncation-toggle.js");
+
               // XXX: implode()'ing to avoid newlines which get converted to
               // <br/>'s in the later check_markup.
               return implode('', array(
@@ -280,14 +320,7 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
               '!field' => $solr_field,
               '!value' => islandora_solr_facet_escape($original_value),
             ));
-            return l($value, 'islandora/search', array(
-              "query" => array(
-                "type" => "dismax",
-                "f" => array(
-                  $solr_query,
-                ),
-              ),
-            ));
+            return \Drupal::l($value, \Drupal\Core\Url::fromRoute('islandora_solr.islandora_solr'));
           }
           return $value;
         };
