@@ -6,7 +6,7 @@ namespace Drupal\islandora_solr_metadata;
  */
 class DefaultController extends ControllerBase {
 
-  public function islandora_solr_metadata_admin_page_callback() {
+  public function islandoraSolrMetadataAdminPageCallback() {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/config.admin');
     module_load_include('inc', 'islandora_solr_metadata', 'includes/general.admin');
     return [
