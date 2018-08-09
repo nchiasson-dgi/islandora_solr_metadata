@@ -5,6 +5,8 @@
  * Implementations of installation hooks.
  */
 
+use Drupal\filter\Entity\FilterFormat;
+
 /**
  * Implements hook_schema().
  */
@@ -81,7 +83,7 @@ function islandora_solr_metadata_schema() {
         'description' => 'Weight of the field within field type.',
       ),
     ),
-    'primary key' => array('configuration_id', 'solr_field'),
+    'primary key' => array('configuration_id', array('solr_field', 191)),
   );
   $schema['islandora_solr_metadata_cmodels'] = array(
     'description' => 'Table that stores content models associated to configurations',
@@ -99,7 +101,7 @@ function islandora_solr_metadata_schema() {
         'description' => 'The name of the content model assigned to this configuration',
       ),
     ),
-    'primary_key' => array('configuration_id', 'cmodel'),
+    'primary_key' => array('configuration_id', array('cmodel', 191)),
   );
   return $schema;
 }
@@ -109,7 +111,7 @@ function islandora_solr_metadata_schema() {
  */
 function islandora_solr_metadata_install() {
   $t = 't';
-  $format = filter_format_load('filtered_html');
+  $format = FilterFormat::load('filtered_html');
   $format->format = 'islandora_solr_metadata_filtered_html';
   $format->name = $t('Islandora Solr Metadata Filtered HTML');
   $format->filters = filter_list_format('filtered_html');
