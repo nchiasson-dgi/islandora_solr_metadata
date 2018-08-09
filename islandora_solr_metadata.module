@@ -5,48 +5,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function islandora_solr_metadata_menu() {
-  $items = array();
-  $items['admin/islandora/search/islandora_solr/metadata'] = array(
-    'title' => 'Metadata Display',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-    'page callback' => 'islandora_solr_metadata_admin_page_callback',
-    'access arguments' => array('administer islandora_solr_metadata'),
-    'file' => 'includes/admin.inc',
-  );
-  $items['admin/islandora/search/islandora_solr_metadata/config/%'] = array(
-    'title callback' => 'islandora_solr_metadata_display_configuration_name',
-    'title arguments' => array(5),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_solr_metadata_config_form', 5),
-    'access callback' => 'islandora_solr_metadata_access',
-    'access arguments' => array(5),
-    'file' => 'includes/config.inc',
-  );
-  $items['admin/islandora/search/islandora_solr_metadata/config/%/%'] = array(
-    'title callback' => 'islandora_solr_metadata_display_field_configuration_name',
-    'title arguments' => array(5, 6),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_solr_metadata_config_field_form', 5, 6),
-    'access callback' => 'islandora_solr_metadata_field_configuration_access',
-    'access arguments' => array(5, 6),
-    'file' => 'includes/config.inc',
-  );
-  $items['admin/islandora/search/islandora_solr_metadata/config/delete/%'] = array(
-    'title' => 'Delete display configuration',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_solr_metadata_delete_config_form', 6),
-    'access callback' => 'islandora_solr_metadata_access',
-    'access arguments' => array(6),
-    'file' => 'includes/delete.inc',
-  );
-  return $items;
-}
-
-/**
  * Implements hook_theme().
  */
 function islandora_solr_metadata_theme() {
@@ -88,17 +46,6 @@ function islandora_solr_metadata_theme() {
         'associations' => array(),
       ),
       'file' => 'theme/theme.inc',
-    ),
-  );
-}
-
-/**
- * Implements hook_permission().
- */
-function islandora_solr_metadata_permission() {
-  return array(
-    'administer islandora_solr_metadata' => array(
-      'title' => 'Create and manage metadata display configurations',
     ),
   );
 }
