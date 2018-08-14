@@ -7,18 +7,18 @@ islandora_solr_metadata.metadata_display:
     _permission: 'administer islandora_solr_metadata'
   options:
     _admin_route: TRUE
-#islandora_solr_metadata.config_1:
-#  path: 'admin/config/search/islandora_solr_metadata/config/{configuration_id}'
-#  defaults:
-#    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigForm'
-#    _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayConfigurationName'
-#  requirements:
-#    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
-#  options:
-#    _admin_route: TRUE
-#    parameters:
-#      configuration_id:
-#        type: int
+islandora_solr_metadata.config_1:
+  path: 'admin/config/search/islandora_solr_metadata/config/{configuration_id}'
+  defaults:
+    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigForm'
+    _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayConfigurationName'
+  requirements:
+    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      configuration_id:
+        type: int
 #islandora_solr_metadata.config_2:
 #  path: 'admin/config/search/islandora_solr_metadata/config/{configuration_id}/{escaped_field_name}'
 #  defaults:

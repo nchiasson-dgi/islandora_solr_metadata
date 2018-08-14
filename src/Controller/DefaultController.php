@@ -2,6 +2,7 @@
 namespace Drupal\islandora_solr_metadata\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Access\AccessResult;
 
 /**
  * Default controller for the islandora_solr_metadata module.
@@ -9,25 +10,17 @@ use Drupal\Core\Controller\ControllerBase;
 class DefaultController extends ControllerBase {
 
   public function islandoraSolrMetadataAdminPageCallback() {
-    module_load_include('inc', 'islandora_solr_metadata', 'includes/config.admin');
-    module_load_include('inc', 'islandora_solr_metadata', 'includes/general.admin');
-    return [
-      'tabset' => [
-        '#type' => 'vertical_tabs',
-        'field_config' => [
-          '#type' => 'fieldset',
-          '#title' => t('Field Configuration'),
-          '#group' => 'tabset',
-          'form' => \Drupal::formBuilder()->getForm('islandora_solr_metadata_admin_form'),
-        ],
-        'general_config' => [
-          '#type' => 'fieldset',
-          '#title' => t('General Configuration'),
-          '#group' => 'tabset',
-          'form' => \Drupal::formBuilder()->getForm('islandora_solr_metadata_general_admin_form'),
-        ],
-      ]
-      ];
+    module_load_include('inc', 'islandora_solr_metadata', 'includes/admin');
+    return islandora_solr_metadata_admin_page_callback();
+  }
+
+  public function islandoraSolrMetadataDisplayConfigurationName($configuration_id) {
+    return islandora_solr_metadata_display_configuration_name($configuration_id);
+  }
+
+  public function islandoraSolrMetadataAccess($configuration_id) {
+    $perm = islandora_solr_metadata_access($configuration_id);
+    return $perm ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
 }

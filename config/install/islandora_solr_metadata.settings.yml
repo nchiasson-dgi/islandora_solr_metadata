@@ -1,0 +1,3 @@
+islandora_solr_metadata_omit_empty_values: false
+islandora_solr_metadata_dedup_values: false
+islandora_solr_metadata_field_value_separator: "\n"

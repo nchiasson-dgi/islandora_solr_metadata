@@ -1,5 +1,8 @@
 <?php
-namespace Drupal\islandora_solr_metadata;
+namespace Drupal\islandora_solr_metadata\Form;
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormBase;
 
 class IslandoraSolrMetadataConfigForm extends FormBase {
 
@@ -61,8 +64,8 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
             'table_wrapper',
             'cmodel_options',
             'cmodel_select',
-          ])
-          ];
+          ]),
+        ];
       }
 
       if ($form_state->getTriggeringElement() == 'islandora-solr-metadata-cmodels-remove-selected') {
@@ -72,14 +75,14 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
           'table',
         ]) as $key => $row) {
           if ($row !== 0) {
-            unset($form_state->get([
+            $form_state->unsetValue([
               'complete form',
               'islandora_solr_metadata_cmodels',
               'table_wrapper',
               'table',
               '#options',
               $key,
-            ]));
+            ]);
           }
         }
       }
@@ -191,7 +194,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
     ];
     $form['islandora_solr_metadata_fields']['table_wrapper']['table'] = islandora_solr_metadata_management($form_state->get([
       'field_data'
-      ]));
+    ]));
     if (count($form['islandora_solr_metadata_fields']['table_wrapper']['table']['table']['rows'])) {
       $form['islandora_solr_metadata_fields']['table_wrapper']['remove_selected'] = [
         '#type' => 'button',
