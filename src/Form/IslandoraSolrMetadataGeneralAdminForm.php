@@ -2,15 +2,22 @@
 namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\ConfigFormBase;
 
-class IslandoraSolrMetadataGeneralAdminForm extends FormBase {
+class IslandoraSolrMetadataGeneralAdminForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
     return 'islandora_solr_metadata_general_admin_form';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEditableConfigNames() {
+    return ['islandora_solr_metadata.settings'];
   }
 
   /**
@@ -65,8 +72,9 @@ class IslandoraSolrMetadataGeneralAdminForm extends FormBase {
       'islandora_solr_metadata_field_value_separator',
     );
     foreach ($variables as $variable) {
-      variable_set($variable, $form_state['values'][$variable]);
+      $this->config('islandora_solr_metadata.settings')->set($variable, $form_state->getValue($variable));
     }
+    $this->config('islandora_solr_metadata.settings')->save();
   }
 
 }
