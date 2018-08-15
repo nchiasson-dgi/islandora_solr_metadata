@@ -3,6 +3,8 @@ namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 class IslandoraSolrMetadataAdminForm extends FormBase {
 
@@ -19,17 +21,17 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
   public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
     $associations = islandora_solr_metadata_get_associations();
-    $form = array();
-    $rows = array();
+    $form = [];
+    $rows = [];
     foreach ($associations as $association) {
       $cmodels = islandora_solr_metadata_get_cmodels($association['id']);
-      $rows[] = array(
-        l($association['name'], "admin/islandora/search/islandora_solr_metadata/config/{$association['id']}"),
+      $rows[] = [
+        Link::fromTextAndUrl($association['name'], Url::fromRoute('islandora_solr_metadata.config_1', ['configuration_id' => $association['id']])),
         empty($cmodels) ? t('No content models currently associated') : theme('item_list', array(
           'items' => array_keys($cmodels),
         )),
         $association['machine_name'],
-      );
+      ];
     }
     $form['table'] = array(
       '#title' => t('Solr metadata associations'),
@@ -71,17 +73,17 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-    if (empty($form_state['values']['configuration_name'])) {
-      form_set_error('configuration_name', t('Please enter a non-empty configuration name!'));
+    if (empty($form_state->getValue('configuration_name'))) {
+      $form_state->setErrorByName('configuration_name', t('Please enter a non-empty configuration name!'));
     }
-    if (empty($form_state['values']['machine_name'])) {
-      form_set_error('machine_name', t('Please enter a non-empty machine name!'));
+    if (empty($form_state->getValue('machine_name'))) {
+      $form_state->setErrorByName('machine_name', t('Please enter a non-empty machine name!'));
     }
     else {
       module_load_include('inc', 'islandora_solr_metadata', 'db');
-      $config_exists = islandora_solr_metadata_retrieve_configuration_from_machine_name($form_state['values']['machine_name']);
+      $config_exists = islandora_solr_metadata_retrieve_configuration_from_machine_name($form_state->getValue('machine_name'));
       if ($config_exists !== FALSE) {
-        form_set_error('machine_name', t('The machine name of @machine already exists in the database!', array('@machine' => $form_state['values']['machine_name'])));
+        $form_state->setErrorByName('machine_name', t('The machine name of @machine already exists in the database!', array('@machine' => $form_state->getValue('machine_name'))));
       }
     }
   }
@@ -90,9 +92,9 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-    module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-    islandora_solr_metadata_add_configuration($form_state['values']['configuration_name'], $form_state['values']['machine_name']);
-    drupal_set_message(t('A new empty configuration has been created for @config_name', array('@config_name' => $form_state['values']['configuration_name'])));
+    $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
+    islandora_solr_metadata_add_configuration($form_state->getValue('configuration_name'), $form_state->getValue('machine_name'));
+    drupal_set_message(t('A new empty configuration has been created for @config_name', array('@config_name' => $form_state->getValue('configuration_name'))));
   }
 
 }
