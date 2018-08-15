@@ -11,7 +11,18 @@
  * Vertical tabs containing multiple forms.
  */
 function islandora_solr_metadata_admin_page_callback() {
-  // XXX: Hacky page callback because vertical tabs cannot be used outside of
-  // forms.
-  return \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataCombinedAdminForm');
+  return [
+    'field_config' => [
+      '#type' => 'details',
+      '#title' => t('Field Configuration'),
+      'form' => \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataAdminForm'),
+      '#open' => FALSE,
+    ],
+    'general_config' => [
+      '#type' => 'details',
+      '#title' => t('General Configuration'),
+      'form' => \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataGeneralAdminForm'),
+      '#open' => FALSE,
+    ],
+  ];
 }
