@@ -467,9 +467,8 @@ function islandora_solr_metadata_management($data) {
     $rows = array_map($map, $data);
   }
   // Add the table to the form.
-  $form['#tree'] = TRUE;
   $form['table'] = array(
-    '#type' => 'markup',
+    '#type' => 'table',
     '#header' => array(
       t('Remove'),
       t('Solr Field'),
@@ -477,8 +476,14 @@ function islandora_solr_metadata_management($data) {
       t('Operations'),
       t('Weight'),
     ),
-    'rows' => $rows,
-    '#theme' => 'islandora_solr_metadata_management_table',
+    '#tabledrag' => array(
+      array(
+        'action' => 'order',
+        'relationship' => 'sibling',
+        'group' => 'islandora-solr-metadata-weight',
+      ),
+    ),
+    '#rows' => $rows,
     '#empty' => t('No fields associated'),
   );
   return $form;
@@ -690,11 +695,10 @@ function islandora_solr_metadata_add_truncation_to_form(&$form, $field_config) {
       '#default_value' => $field_config['default_values']['truncation_type'],
     ),
     'max_length' => array(
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => t('Max Length'),
       '#description' => t('The field contents will be truncated to be at most this length (in characters) for display. 0 or less to disable truncation.<br /> When truncating based on the whole field the max length may be exceeded by the length of ellispse string.'),
       '#default_value' => $field_config['default_values']['max_length'],
-      '#element_validate' => array('element_validate_integer'),
     ),
     'word_safe' => array(
       '#type' => 'checkbox',
@@ -709,10 +713,10 @@ function islandora_solr_metadata_add_truncation_to_form(&$form, $field_config) {
       '#default_value' => $field_config['default_values']['ellipsis'],
     ),
     'min_wordsafe_length' => array(
-      '#type' => 'textfield',
+      '#type' => 'number',
       '#title' => t('Minimum word-safe length'),
       '#default_value' => $field_config['default_values']['min_wordsafe_length'],
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#min' => 0,
       '#states' => array(
         'visible' => array(
           ':input[name="' . $field_config['min_wordsafe_length_input_path'] . '"]' => array(

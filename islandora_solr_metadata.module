@@ -9,10 +9,6 @@
  */
 function islandora_solr_metadata_theme() {
   return array(
-    'islandora_solr_metadata_management_table' => array(
-      'render element' => 'table',
-      'file' => 'theme/theme.inc',
-    ),
     'islandora_solr_metadata_display' => array(
       'template' => 'theme/islandora-solr-metadata-display',
       // We can add PIDs to the end of this pattern in our preprocess function

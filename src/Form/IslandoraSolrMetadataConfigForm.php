@@ -16,6 +16,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
   public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state, $configuration_id = NULL) {
     $form_state->loadInclude('islandora', 'inc', 'includes/content_model.autocomplete');
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
+    $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/config');
     $field_to_add = FALSE;
     $cmodel_to_add = FALSE;
 
@@ -56,8 +57,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
           'rows',
         ]), $to_remove)));
       }
-
-      if ($form_state->getTriggeringElement() == 'islandora-solr-metadata-cmodels-add-cmodel') {
+      if ($form_state->getTriggeringElement()['#name'] == 'islandora-solr-metadata-cmodels-add-cmodel') {
         $cmodel_to_add = [
           'cmodel' => $form_state->getValue([
             'islandora_solr_metadata_cmodels',
@@ -105,20 +105,16 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
     ];
     // If there are values in the form_state use them for persistence in case of
     // AJAX callbacks, otherwise grab fresh values from the database.
-    if (!$form_state->getValues()) {
+    if ($form_state->getValues()) {
       if (!$form_state->getValue([
         'islandora_solr_metadata_cmodels',
         'table_wrapper',
         'table',
       ])) {
-        $cmodels_associated = $form_state->get([
-          'complete form',
-          'islandora_solr_metadata_cmodels',
-          'table_wrapper',
-          'table',
-          '#options',
-        ]);
+        $cmodels_associated = $form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options'];
       }
+ksm($form_state->getTriggeringElement());
+ksm($form_state);
     }
     else {
       $cmodels_associated = islandora_solr_metadata_get_cmodels($configuration_id);
@@ -127,6 +123,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
     if ($cmodel_to_add !== FALSE) {
       $cmodels_associated[$cmodel_to_add['cmodel']] = $cmodel_to_add;
     }
+ksm($cmodels_associated);
 
     $form['islandora_solr_metadata_cmodels']['table_wrapper']['table'] = [
       '#type' => 'tableselect',
@@ -195,7 +192,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
     $form['islandora_solr_metadata_fields']['table_wrapper']['table'] = islandora_solr_metadata_management($form_state->get([
       'field_data'
     ]));
-    if (count($form['islandora_solr_metadata_fields']['table_wrapper']['table']['table']['rows'])) {
+    if (count($form['islandora_solr_metadata_fields']['table_wrapper']['table']['table']['#rows'])) {
       $form['islandora_solr_metadata_fields']['table_wrapper']['remove_selected'] = [
         '#type' => 'button',
         '#value' => t('Remove selected'),
@@ -412,7 +409,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       $fields_db = islandora_solr_metadata_get_fields($configuration_id);
 
       $cmodels_db = islandora_solr_metadata_get_cmodels($configuration_id);
-      $cmodels_fs = $form_state->get(['complete form', 'islandora_solr_metadata_cmodels', 'table_wrapper', 'table', '#options']);
+      $cmodels_fs = $form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options'];
 
       $cmodels_deletion = array_diff_key($cmodels_db, $cmodels_fs);
       $cmodels_insertion = array_diff_key($cmodels_fs, $cmodels_db);
