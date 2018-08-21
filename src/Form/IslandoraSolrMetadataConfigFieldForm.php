@@ -1,5 +1,8 @@
 <?php
-namespace Drupal\islandora_solr_metadata;
+namespace Drupal\islandora_solr_metadata\Form;
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormBase;
 
 class IslandoraSolrMetadataConfigFieldForm extends FormBase {
 

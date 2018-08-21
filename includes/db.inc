@@ -169,7 +169,7 @@ function islandora_solr_metadata_get_fields($configuration_id, $translate = TRUE
   $fields = $result->fetchAllAssoc('solr_field', PDO::FETCH_ASSOC);
   $deserialize_data = function ($field) {
     // Merge unserialized blob into field array.
-    $field += unserialize($field['data']);
+    $field += [unserialize($field['data'])];
 
     // Add in defaults.
     $field += array(
@@ -545,6 +545,6 @@ function islandora_solr_metadata_remove_i18n_description($id) {
  * "islandora_solr_metadata_fields",
  */
 function islandora_solr_metadata_fields_non_data_fields() {
-  $schema = drupal_get_schema('islandora_solr_metadata_fields');
+  $schema = drupal_get_module_schema('islandora_solr_metadata', 'islandora_solr_metadata_fields');
   return $schema['fields'];
 }

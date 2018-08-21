@@ -4,6 +4,8 @@
  * Houses the form and utilities used in islandora_solr_metadata configurations.
  */
 
+use Drupal\Core\Url;
+
 /**
  * The configuration form for the islandora_solr_metadata module.
  *
@@ -430,43 +432,55 @@ function islandora_solr_metadata_management($data) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   $form = array();
   $rows = array();
-
   if ($data) {
-    uasort($data, 'drupal_sort_weight');
+    uasort($data, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
     $max_delta = max(count($data), 10);
     $weight = 0;
     $map = function ($field) use ($max_delta, &$weight) {
       $value = $weight;
       $weight++;
       return array(
-        'remove_field' => array(
+        '#attributes' => [
+          'class' => [
+            'draggable',
+          ],
+        ],
+        'remove_field' => [
           '#type' => 'checkbox',
           '#default_value' => isset($field['remove']) ? $field['remove'] : FALSE,
-        ),
-        'solr_field_markup' => array('#markup' => \Drupal\Component\Utility\Xss::filter($field['solr_field'])),
-        'label' => array('#markup' => empty($field['display_label']) ? \Drupal\Component\Utility\Xss::filter($field['solr_field']) : \Drupal\Component\Utility\Xss::filter($field['display_label'])),
-        'operations' => array(
+        ],
+        'solr_field_markup' => [
+          '#type' => 'item',
+          '#markup' => \Drupal\Component\Utility\Xss::filter($field['solr_field']),
+        ],
+        'label' => [
+          '#type' => 'item',
+          '#markup' => empty($field['display_label']) ? \Drupal\Component\Utility\Xss::filter($field['solr_field']) : \Drupal\Component\Utility\Xss::filter($field['display_label']),
+        ],
+        'operations' => [
           'edit' => array(
             '#access' => isset($field['ajax-volatile']) ? !$field['ajax-volatile'] : TRUE,
-            '#theme' => 'link',
-            '#path' => "admin/islandora/search/islandora_solr_metadata/config/{$field['configuration_id']}/" . islandora_solr_replace_slashes($field['solr_field']),
-            '#text' => t('edit'),
-            '#options' => array(
-              'attributes' => array(),
-              'html' => FALSE,
-            ),
+            '#type' => 'link',
+            '#url' => Url::fromRoute('islandora_solr_metadata.config_2', ['configuration_id' => $field['configuration_id'],  'escaped_field_name' => islandora_solr_replace_slashes($field['solr_field'])]),
+            '#title' => t('edit'),
           ),
-        ),
-        'weight' => array(
+        ],
+        'weight' => [
           '#type' => 'weight',
           '#delta' => $max_delta,
           '#default_value' => $weight,
-        ),
+          '#attributes' => [
+            'class' => [
+              'islandora-solr-metadata-weight',
+            ],
+          ],
+        ],
       );
     };
     $rows = array_map($map, $data);
   }
   // Add the table to the form.
+  $form['#tree'] = TRUE;
   $form['table'] = array(
     '#type' => 'table',
     '#header' => array(
@@ -483,9 +497,8 @@ function islandora_solr_metadata_management($data) {
         'group' => 'islandora-solr-metadata-weight',
       ),
     ),
-    '#rows' => $rows,
     '#empty' => t('No fields associated'),
-  );
+  ) + $rows;
   return $form;
 }
 
