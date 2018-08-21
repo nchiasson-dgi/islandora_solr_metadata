@@ -201,7 +201,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       '#type' => 'textfield',
       '#description' => t('A field from within Solr'),
       '#size' => 105,
-      '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+      '#autocomplete_route_name' => 'islandora_solr.autocomplete_luke',
       '#default_value' => '',
     ];
     $form['islandora_solr_metadata_fields']['table_wrapper']['add_fieldset']['add_field'] = [
@@ -225,7 +225,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       '#type' => 'textfield',
       '#description' => t('A field from within Solr'),
       '#size' => 105,
-      '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+      '#autocomplete_route_name' => 'islandora_solr.autocomplete_luke',
       '#default_value' => $description['description_field'],
     ];
     $form['islandora_solr_metadata_fields']['description_fieldset']['display_label'] = [
