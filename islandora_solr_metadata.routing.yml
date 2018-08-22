@@ -33,15 +33,15 @@ islandora_solr_metadata.config_2:
         type: int
       escaped_field_name:
         type: string
-#islandora_solr_metadata.config_delete:
-#  path: 'admin/config/search/islandora_solr_metadata/config/delete/{configuration_id}'
-#  defaults:
-#    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataDeleteConfigForm'
-#    _title: 'Delete display configuration'
-#  requirements:
-#    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
-#  options:
-#    _admin_route: TRUE
-#    parameters:
-#      configuration_id:
-#        type: int
+islandora_solr_metadata.config_delete:
+  path: 'admin/config/search/islandora_solr_metadata/config/delete/{configuration_id}'
+  defaults:
+    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataDeleteConfigForm'
+    _title: 'Delete display configuration'
+  requirements:
+    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      configuration_id:
+        type: int

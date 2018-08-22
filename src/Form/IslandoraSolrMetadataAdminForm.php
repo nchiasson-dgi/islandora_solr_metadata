@@ -26,11 +26,19 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
     foreach ($associations as $association) {
       $cmodels = islandora_solr_metadata_get_cmodels($association['id']);
       $rows[] = [
-        Link::fromTextAndUrl($association['name'], Url::fromRoute('islandora_solr_metadata.config_1', ['configuration_id' => $association['id']])),
-        empty($cmodels) ? t('No content models currently associated') : theme('item_list', array(
-          'items' => array_keys($cmodels),
-        )),
-        $association['machine_name'],
+        'name' => [
+          '#type' => 'link',
+          '#title' => $association['name'],
+          '#url' => Url::fromRoute('islandora_solr_metadata.config_1', ['configuration_id' => $association['id']]),
+        ],
+        'associated_cmodels' => empty($cmodels) ? t('No content models currently associated') : [
+          '#theme' => 'item_list',
+          '#items' => array_keys($cmodels),
+        ],
+        'machine_name' => [
+          '#type' => 'item',
+          '#markup' => $association['machine_name'],
+        ],
       ];
     }
     $form['table'] = array(
@@ -41,9 +49,8 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
         t('Associated content models'),
         t('Machine name'),
       ),
-      '#rows' => $rows,
       '#empty' => t('No associations currently present.'),
-    );
+    ) + $rows;
     $form['add_configuration'] = array(
       '#type' => 'fieldset',
       '#title' => t('Add a configuration'),
