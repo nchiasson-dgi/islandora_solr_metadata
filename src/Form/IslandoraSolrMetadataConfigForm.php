@@ -3,6 +3,8 @@ namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class IslandoraSolrMetadataConfigForm extends FormBase {
 
@@ -435,8 +437,16 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       drupal_set_message(t('The Solr metadata display configuration options have been saved.'));
     }
 
-    if ($form_state->get(['clicked_button', '#value']) == 'Delete configuration') {
-      drupal_goto("admin/islandora/search/islandora_solr_metadata/config/delete/$configuration_id");
+    if ($form_state->getTriggeringElement()['#value'] == 'Delete configuration') {
+      $url = Url::fromRoute('islandora_solr_metadata.config_delete', ['configuration_id' => $configuration_id]);
+      $response = new RedirectResponse($url->toString());
+      $request = \Drupal::request();
+      // Save the session so things like messages get saved.
+      $request->getSession()->save();
+      $response->prepare($request);
+      // Make sure to trigger kernel events.
+      \Drupal::service('kernel')->terminate($request, $response);
+      $response->send();
     }
   }
 

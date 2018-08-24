@@ -25,16 +25,26 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
     $rows = [];
     foreach ($associations as $association) {
       $cmodels = islandora_solr_metadata_get_cmodels($association['id']);
+      $associated_cmodels = [];
+      if (empty($cmodels)) {
+        $associated_cmodels = [
+          '#type' => 'item',
+          '#markup' => t('No content models currently associated'),
+        ];
+      }
+      else {
+        $associated_cmodels = [
+          '#theme' => 'item_list',
+          '#items' => array_keys($cmodels),
+        ];
+      }
       $rows[] = [
         'name' => [
           '#type' => 'link',
           '#title' => $association['name'],
           '#url' => Url::fromRoute('islandora_solr_metadata.config_1', ['configuration_id' => $association['id']]),
         ],
-        'associated_cmodels' => empty($cmodels) ? t('No content models currently associated') : [
-          '#theme' => 'item_list',
-          '#items' => array_keys($cmodels),
-        ],
+        'associated_cmodels' => $associated_cmodels,
         'machine_name' => [
           '#type' => 'item',
           '#markup' => $association['machine_name'],
