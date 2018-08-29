@@ -20,7 +20,7 @@ islandora_solr_metadata.config_1:
       configuration_id:
         type: int
 islandora_solr_metadata.config_2:
-  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{configuration_id}/{escaped_field_name}'
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{config_id}/{escaped_field_name}'
   defaults:
     _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigFieldForm'
     _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayFieldConfigurationName'
@@ -29,7 +29,7 @@ islandora_solr_metadata.config_2:
   options:
     _admin_route: TRUE
     parameters:
-      configuration_id:
+      config_id:
         type: int
       escaped_field_name:
         type: string

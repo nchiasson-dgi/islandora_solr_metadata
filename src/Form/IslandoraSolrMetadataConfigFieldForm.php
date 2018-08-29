@@ -15,8 +15,11 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
 
   public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state, $config_id = NULL, $escaped_field_name = NULL) {
     $form_state->loadInclude('islandora_solr', 'inc', 'includes/utilities');
+    $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/config');
+    $form_state->loadInclude('islandora', 'inc', 'includes/content_model.autocomplete');
     $field_name = islandora_solr_restore_slashes($escaped_field_name);
     $get_default = function ($value, $default = '') use ($config_id, $field_name) {
+      module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
       static $field_info = NULL;
       if ($field_info === NULL) {
         $fields = islandora_solr_metadata_get_fields($config_id);
@@ -51,7 +54,7 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
       '#title' => t('URI/PID Replacement Field'),
       '#description' => t('If the value of this field represents a Fedora URI or PID, a Solr field can be specified to replace that value, e.g., with the object label instead of the full URI.'),
       '#default_value' => $get_default('uri_replacement', ''),
-      '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+      '#autocomplete_route_name' => 'islandora_solr.autocomplete_luke',
     ];
     if (islandora_solr_is_date_field($field_name)) {
       $set['date_format'] = [
@@ -112,18 +115,15 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
   }
 
   public function submitForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
-    list($config_id, $escaped_field_name) = $form_state->getBuildInfo();
+    list($config_id, $escaped_field_name) = $form_state->getBuildInfo()['args'];
     $field_name = islandora_solr_restore_slashes($escaped_field_name);
 
     $fields = islandora_solr_metadata_get_fields($config_id);
     $field_info = $fields[$field_name];
-
     $field_info = $form_state->getValue(['wrapper']) + $field_info;
     islandora_solr_metadata_update_fields($config_id, [$field_info]);
 
-    $form_state->set(['redirect'], [
-      "admin/islandora/search/islandora_solr_metadata/config/$config_id"
-      ]);
+    $form_state->setRedirect('islandora_solr_metadata.config_1', ['configuration_id' => $config_id]);
   }
 
 }

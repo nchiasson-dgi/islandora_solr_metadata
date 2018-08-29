@@ -172,22 +172,16 @@ function islandora_solr_metadata_islandora_metadata_display_info() {
 function islandora_solr_metadata_display_callback(AbstractObject $object, $print = FALSE) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   $elements = array(
-    'islandora_object' => $object,
-    'print' => $print,
-    'associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
+    '#islandora_object' => $object,
+    '#print' => $print,
+    '#associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
   );
   \Drupal::moduleHandler()->alter('islandora_solr_metadata_display_elements', $elements);
-  if (count($elements['associations']) > 0) {
-    // @FIXME
-// theme() has been renamed to _theme() and should NEVER be called directly.
-// Calling _theme() directly can alter the expected output and potentially
-// introduce security issues (see https://www.drupal.org/node/2195739). You
-// should use renderable arrays instead.
-// 
-// 
-// @see https://www.drupal.org/node/2195739
-// return theme('islandora_solr_metadata_display', $elements);
-
+  if (count($elements['#associations']) > 0) {
+    $markup = [
+      '#theme' => 'islandora_solr_metadata_display',
+    ] + $elements;
+    return drupal_render($markup);
   }
   else {
     return FALSE;
@@ -205,22 +199,18 @@ function islandora_solr_metadata_display_callback(AbstractObject $object, $print
  */
 function islandora_solr_metadata_description_callback(AbstractObject $object) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
+  module_load_include('module', 'islandora');
+  $object = islandora_object_load($object->id);
   $elements = array(
-    'islandora_object' => $object,
-    'associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
+    '#islandora_object' => $object,
+    '#associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
   );
   \Drupal::moduleHandler()->alter('islandora_solr_metadata_description_elements', $elements);
-  if (count($elements['associations']) > 0) {
-    // @FIXME
-// theme() has been renamed to _theme() and should NEVER be called directly.
-// Calling _theme() directly can alter the expected output and potentially
-// introduce security issues (see https://www.drupal.org/node/2195739). You
-// should use renderable arrays instead.
-// 
-// 
-// @see https://www.drupal.org/node/2195739
-// return theme('islandora_solr_metadata_description', $elements);
-
+  if (count($elements['#associations']) > 0) {
+    $markup = [
+      '#theme' => 'islandora_solr_metadata_description',
+    ] + $elements;
+    return drupal_render($markup);
   }
   else {
     return FALSE;

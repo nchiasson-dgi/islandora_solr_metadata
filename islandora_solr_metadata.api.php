@@ -18,8 +18,8 @@
  */
 function hook_islandora_solr_metadata_display_elements_alter(&$elements) {
   // Artificial example: Get rid of associations if the object is not active.
-  if ($elements['islandora_object']->state != 'A') {
-    $elements['associations'] = array();
+  if ($elements['#islandora_object']->state != 'A') {
+    $elements['#associations'] = array();
   }
 }
 
@@ -35,7 +35,7 @@ function hook_islandora_solr_metadata_display_elements_alter(&$elements) {
  */
 function hook_islandora_solr_metadata_description_elements_alter(&$elements) {
   // Artificial example: Get rid of associations if the object is not active.
-  if ($elements['islandora_object']->state != 'A') {
-    $elements['associations'] = array();
+  if ($elements['#islandora_object']->state != 'A') {
+    $elements['#associations'] = array();
   }
 }

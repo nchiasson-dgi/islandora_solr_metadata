@@ -461,7 +461,7 @@ function islandora_solr_metadata_management($data) {
           'edit' => array(
             '#access' => isset($field['ajax-volatile']) ? !$field['ajax-volatile'] : TRUE,
             '#type' => 'link',
-            '#url' => Url::fromRoute('islandora_solr_metadata.config_2', ['configuration_id' => $field['configuration_id'],  'escaped_field_name' => islandora_solr_replace_slashes($field['solr_field'])]),
+            '#url' => Url::fromRoute('islandora_solr_metadata.config_2', ['config_id' => $field['configuration_id'],  'escaped_field_name' => islandora_solr_replace_slashes($field['solr_field'])]),
             '#title' => t('edit'),
           ),
         ],
@@ -613,7 +613,7 @@ function islandora_solr_metadata_get_admin_permissions_fieldset($permissions, $p
     'permissions' => array(
       '#type' => 'checkboxes',
       '#title' => t('Permissions'),
-      '#options' => user_roles(),
+      '#options' => user_role_names(),
       '#default_value' => !empty($permissions['permissions']) ? $permissions['permissions'] : $permissions_default,
       '#description' => t('Select which roles can access this field.<br /><strong>Note:</strong> checkboxes may be grayed out for roles which do not have permission to search the Solr index.'),
       '#states' => array(

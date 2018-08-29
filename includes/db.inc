@@ -94,11 +94,17 @@ function islandora_solr_metadata_get_associations() {
  *   An array of strings, representing display configuration IDs.
  */
 function islandora_solr_metadata_get_associations_by_cmodels(array $cmodels) {
-  return db_select('islandora_solr_metadata_cmodels', 'i')
+  // There's an extra model that needs to be ignored.
+  $to_ignore = array_search('fedora-system:FedoraObject-3.0', $cmodels);
+  if ($to_ignore) {
+    unset($cmodels[$to_ignore]);
+  }
+  $results = db_select('islandora_solr_metadata_cmodels', 'i')
     ->fields('i', array('configuration_id'))
     ->condition('cmodel', $cmodels)
     ->execute()
     ->fetchAllAssoc('configuration_id', PDO::FETCH_ASSOC);
+  return $results;
 }
 
 /**
@@ -176,7 +182,6 @@ function islandora_solr_metadata_get_fields($configuration_id, $translate = TRUE
       'display_label' => $field['solr_field'],
       'hyperlink' => 0,
     );
-
     return $field;
   };
   $fields = array_map($deserialize_data, $fields);
