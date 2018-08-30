@@ -4,53 +4,7 @@
  * Theme functions for the islandora_solr_metadata module.
  */
 
-/**
- * Implements theme_element().
- */
-function theme_islandora_solr_metadata_management_table(array $variables) {
-  $table = $variables['table'];
-  $rows = array();
-  $weight_class = 'islandora-solr-metadata-weight';
-  foreach (\Drupal\Core\Render\Element::children($table['rows']) as $id) {
-    $row = &$table['rows'][$id];
-    $row['weight']['#attributes'] = array('class' => array($weight_class));
-    $rows[] = array(
-      'data' => array(
-        \Drupal::service("renderer")->render($row['remove_field']),
-        \Drupal::service("renderer")->render($row['solr_field_markup']),
-        \Drupal::service("renderer")->render($row['label']),
-        \Drupal::service("renderer")->render($row['operations']),
-        \Drupal::service("renderer")->render($row['weight']),
-      ),
-      'class' => array('draggable'),
-    );
-  }
-  $table_id = 'entry-order';
-  // @FIXME
-// theme() has been renamed to _theme() and should NEVER be called directly.
-// Calling _theme() directly can alter the expected output and potentially
-// introduce security issues (see https://www.drupal.org/node/2195739). You
-// should use renderable arrays instead.
-// 
-// 
-// @see https://www.drupal.org/node/2195739
-// $output = theme('table', array(
-//     'header' => $table['#header'],
-//     'rows' => $rows,
-//     'attributes' => array('id' => $table_id),
-//     'empty' => t('There are no entries available.')));
-
-  $output .= drupal_render_children($table);
-  // @FIXME
-// TableDrag is now attached with the #tabledrag property of certain render
-// arrays. drupal_add_tabledrag() is now internal and should never be called directly.
-// 
-// 
-// @see https://www.drupal.org/node/2160571
-// drupal_add_tabledrag($table_id, 'order', 'sibling', $weight_class);
-
-  return $output;
-}
+use Drupal\islandora_solr\IslandoraSolrQueryProcessor;
 
 /**
  * Prepares variables for islandora_solr_metadata_display templates.
@@ -68,24 +22,7 @@ function theme_islandora_solr_metadata_management_table(array $variables) {
 function template_preprocess_islandora_solr_metadata_display(array &$variables) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora', 'includes/utilities');
-  // @FIXME
-// The Assets API has totally changed. CSS, JavaScript, and libraries are now
-// attached directly to render arrays using the #attached property.
-// 
-// 
-// @see https://www.drupal.org/node/2169605
-// @see https://www.drupal.org/node/2408597
-// drupal_add_js('misc/form.js');
-
-  // @FIXME
-// The Assets API has totally changed. CSS, JavaScript, and libraries are now
-// attached directly to render arrays using the #attached property.
-// 
-// 
-// @see https://www.drupal.org/node/2169605
-// @see https://www.drupal.org/node/2408597
-// drupal_add_js('misc/collapse.js');
-
+  $variables['#attached']['library'][] = 'islandora_solr_metadata/display';
 
   $object = $variables['islandora_object'];
   $db_fields = array();
@@ -112,17 +49,19 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   }
   $variables['separator'] = $separator;
   $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
-}
 
-/**
- * Implements template_process_HOOK() for islandora_solr_metadata_description.
- */
-function template_process_islandora_solr_metadata_display(array &$variables) {
+  $variables['islandora_solr_metadata_omit_empty_values'] = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values');
+
   $variables['found'] = islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields']);
   $variables['not_found_message'] = t('Document not present in Solr while generating the metadata display for @id. Try !reloading the page, or contact an administrator if this issue persists.', array(
     '@id' => $variables['islandora_object']->id,
     '!reloading' => '<a href="" onclick="window.location.reload(true)">' . t('reloading') . '</a>',
   ));
+
+  foreach ($variables['solr_fields'] as $solr_field) {
+    $solr_field['value_filtered'] = $solr_field['value'];
+  }
+ksm($variables);
 }
 
 /**
@@ -162,12 +101,7 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
     $separator = "\n";
   }
   $variables['separator'] = $separator;
-}
 
-/**
- * Implements template_process_HOOK() for islandora_solr_metadata_description.
- */
-function template_process_islandora_solr_metadata_description(array &$variables) {
   $variables['found'] = islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields']);
 
   // XXX: Seems a little odd, yes... Was reusing the "description" value,
@@ -209,6 +143,9 @@ function template_process_islandora_solr_metadata_description(array &$variables)
         }
       }
     }
+  }
+  foreach ($variables['description'] as $solr_field) {
+    $solr_field['value_filtered'] = $solr_field['value'];
   }
 }
 
@@ -370,7 +307,7 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
         }
       }
 
-      uasort($solr_fields, 'drupal_sort_weight');
+      uasort($solr_fields, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
       return TRUE;
     }
     else {

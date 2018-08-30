@@ -1,0 +1,4 @@
+display:
+  js:
+    misc/form.js: {}
+    misc/collapse.js: {}

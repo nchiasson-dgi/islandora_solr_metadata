@@ -1,0 +1,33 @@
+{#
+/**
+ * @file
+ * This is the template file for the metadata description for an object.
+ *
+ * Available variables:
+ * - $islandora_object: The Islandora object rendered in this template file
+ * - $found: Boolean indicating if a Solr doc was found for the current object.
+ *
+ * @see template_preprocess_islandora_solr_metadata_description()
+ * @see template_process_islandora_solr_metadata_description()
+ */
+#}
+{% if found and description is not empty %}
+  <div class="islandora-solr-metadata-sidebar">
+    {% if combine %}
+      <h2>{% if description|length > 1 %}
+        {{ 'Description'|t }}
+      {% else %}
+        {% set desc_array = description|first %}
+        {{ desc_array.display_label }}
+      {% endif %}</h2>
+      {% for value in description %}
+        <p property="description">{{ value.value_filtered }}</p>
+      {% endfor %}
+    {% else %}
+      {% for value in description %}
+        <h2>{{ value.display_label }}</h2>
+        <p>{{ value.value_filtered }}</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endif %}

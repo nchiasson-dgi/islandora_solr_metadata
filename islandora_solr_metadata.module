@@ -181,7 +181,7 @@ function islandora_solr_metadata_display_callback(AbstractObject $object, $print
     $markup = [
       '#theme' => 'islandora_solr_metadata_display',
     ] + $elements;
-    return drupal_render($markup);
+    return $markup;
   }
   else {
     return FALSE;
@@ -210,7 +210,7 @@ function islandora_solr_metadata_description_callback(AbstractObject $object) {
     $markup = [
       '#theme' => 'islandora_solr_metadata_description',
     ] + $elements;
-    return drupal_render($markup);
+    return $markup;
   }
   else {
     return FALSE;
