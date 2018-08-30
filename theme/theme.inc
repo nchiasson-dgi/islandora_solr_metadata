@@ -58,10 +58,9 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
     '!reloading' => '<a href="" onclick="window.location.reload(true)">' . t('reloading') . '</a>',
   ));
 
-  foreach ($variables['solr_fields'] as $solr_field) {
-    $solr_field['value_filtered'] = $solr_field['value'];
+  foreach ($variables['solr_fields'] as &$solr_field) {
+    $solr_field['value_filtered'] = $solr_field['value'][0];
   }
-ksm($variables);
 }
 
 /**
@@ -144,8 +143,8 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
       }
     }
   }
-  foreach ($variables['description'] as $solr_field) {
-    $solr_field['value_filtered'] = $solr_field['value'];
+  foreach ($variables['description'] as &$solr_field) {
+    $solr_field['value_filtered'] = $solr_field['value'][0];
   }
 }
 

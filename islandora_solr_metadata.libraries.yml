@@ -2,3 +2,6 @@ display:
   js:
     misc/form.js: {}
     misc/collapse.js: {}
+  css:
+    theme:
+      css/islandora_solr_metadata.css: {}

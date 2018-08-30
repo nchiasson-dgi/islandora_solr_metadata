@@ -18,7 +18,7 @@
  */
 #}
 {% if found %}
-  {% if solr_fields is not empty and islandora_solr_metadata_omit_empty_values %}
+  {% if not (solr_fields is empty and islandora_solr_metadata_omit_empty_values) %}
     <fieldset {{ print ? 'class="islandora islandora-metadata"' : 'class="islandora islandora-metadata collapsible collapsed"' }}>
       <legend><span class="fieldset-legend">{{ 'Details'|t }}</span></legend>
       <div class="fieldset-wrapper">
