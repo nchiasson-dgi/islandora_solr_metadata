@@ -21,7 +21,7 @@
         {{ desc_array.display_label }}
       {% endif %}</h2>
       {% for value in description %}
-        <p property="description">{{ value.value_filtered }}</p>
+        <p property="description">{{ value.value_filtered|raw }}</p>
       {% endfor %}
     {% else %}
       {% for value in description %}
