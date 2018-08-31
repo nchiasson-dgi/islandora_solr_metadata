@@ -105,3 +105,16 @@ function islandora_solr_metadata_schema() {
   );
   return $schema;
 }
+
+/**
+ * Implements hook_install().
+ */
+function islandora_solr_metadata_install() {
+  $format = FilterFormat::load('restricted_html')->createDuplicate();
+  $filters = $format->get('filters');
+  $filters['filter_html']['settings']['allowed_html'] .= ' <span>';
+  $format->set('filters', $filters);
+  $format = $format->setOriginalId('islandora_solr_metadata_filter_html');
+  $format->set('name', t('Islandora Solr Metadata Filtered HTML'));
+  $format->save();
+}
