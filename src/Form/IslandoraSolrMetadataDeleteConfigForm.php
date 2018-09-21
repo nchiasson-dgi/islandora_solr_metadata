@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\Core\Form\FormStateInterface;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Hook descriptions.
@@ -16,10 +17,10 @@
  *   - associations: An array of metadata configuration IDs, similar to the
  *     return of islandora_solr_metadata_get_associations_by_cmodels().
  */
-function hook_islandora_solr_metadata_display_elements_alter(&$elements) {
+function hook_islandora_solr_metadata_display_elements_alter(array &$elements) {
   // Artificial example: Get rid of associations if the object is not active.
   if ($elements['#islandora_object']->state != 'A') {
-    $elements['#associations'] = array();
+    $elements['#associations'] = [];
   }
 }
 
@@ -33,9 +34,9 @@ function hook_islandora_solr_metadata_display_elements_alter(&$elements) {
  *   - associations: An array of metadata configuration IDs, similar to the
  *     return of islandora_solr_metadata_get_associations_by_cmodels().
  */
-function hook_islandora_solr_metadata_description_elements_alter(&$elements) {
+function hook_islandora_solr_metadata_description_elements_alter(array &$elements) {
   // Artificial example: Get rid of associations if the object is not active.
   if ($elements['#islandora_object']->state != 'A') {
-    $elements['#associations'] = array();
+    $elements['#associations'] = [];
   }
 }

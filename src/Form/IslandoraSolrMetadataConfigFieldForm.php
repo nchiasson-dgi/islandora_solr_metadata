@@ -1,9 +1,14 @@
 <?php
+
 namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormBase;
+use Drupal\Component\Utility\NestedArray;
 
+/**
+ * Form to configure fields in the solr metadata display.
+ */
 class IslandoraSolrMetadataConfigFieldForm extends FormBase {
 
   /**
@@ -13,7 +18,10 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
     return 'islandora_solr_metadata_config_field_form';
   }
 
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state, $config_id = NULL, $escaped_field_name = NULL) {
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $config_id = NULL, $escaped_field_name = NULL) {
     $form_state->loadInclude('islandora_solr', 'inc', 'includes/utilities');
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/config');
     $form_state->loadInclude('islandora', 'inc', 'includes/content_model.autocomplete');
@@ -26,44 +34,44 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
         $field_info = $fields[$field_name];
       }
       $exists = FALSE;
-      $looked_up = \Drupal\Component\Utility\NestedArray::getValue($field_info, (array) $value, $exists);
+      $looked_up = NestedArray::getValue($field_info, (array) $value, $exists);
       return $exists ? $looked_up : $default;
     };
 
     $form['#tree'] = TRUE;
     $form['wrapper'] = [
       '#type' => 'fieldset',
-      '#title' => t('Field config'),
+      '#title' => $this->t('Field config'),
     ];
 
     $set = & $form['wrapper'];
     $set['display_label'] = [
       '#type' => 'textfield',
-      '#title' => t('Display Label'),
-      '#description' => t('A human-readable label to display alongside values found for this field.'),
+      '#title' => $this->t('Display Label'),
+      '#description' => $this->t('A human-readable label to display alongside values found for this field.'),
       '#default_value' => $get_default('display_label', $field_name),
     ];
     $set['hyperlink'] = [
       '#type' => 'checkbox',
-      '#title' => t('Hyperlink?'),
-      '#description' => t('Should each value for this field be linked to a search to find objects with the value in this field?'),
+      '#title' => $this->t('Hyperlink?'),
+      '#description' => $this->t('Should each value for this field be linked to a search to find objects with the value in this field?'),
       '#default_value' => $get_default('hyperlink', FALSE),
     ];
     $set['uri_replacement'] = [
       '#type' => 'textfield',
-      '#title' => t('URI/PID Replacement Field'),
-      '#description' => t('If the value of this field represents a Fedora URI or PID, a Solr field can be specified to replace that value, e.g., with the object label instead of the full URI.'),
+      '#title' => $this->t('URI/PID Replacement Field'),
+      '#description' => $this->t('If the value of this field represents a Fedora URI or PID, a Solr field can be specified to replace that value, e.g., with the object label instead of the full URI.'),
       '#default_value' => $get_default('uri_replacement', ''),
       '#autocomplete_route_name' => 'islandora_solr.autocomplete_luke',
     ];
     if (islandora_solr_is_date_field($field_name)) {
       $set['date_format'] = [
         '#type' => 'textfield',
-        '#title' => t('Date format'),
+        '#title' => $this->t('Date format'),
         '#default_value' => $get_default('date_format', ''),
-        '#description' => t('The format of the date, as it will be displayed in the search results. Use <a href="!url" target="_blank">PHP date()</a> formatting. Works best when the date format matches the granularity of the source data. Otherwise it is possible that there will be duplicates displayed.', [
-          '!url' => 'http://php.net/manual/function.date.php'
-          ]),
+        '#description' => $this->t('The format of the date, as it will be displayed in the search results. Use <a href="@url" target="_blank">PHP date()</a> formatting. Works best when the date format matches the granularity of the source data. Otherwise it is possible that there will be duplicates displayed.', [
+          '@url' => 'http://php.net/manual/function.date.php',
+        ]),
       ];
     }
     // Add in truncation fields for metadata field.
@@ -98,23 +106,29 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
 
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Save field configuration'),
+      '#value' => $this->t('Save field configuration'),
     ];
     return $form;
   }
 
-  public function validateForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getValue(['wrapper', 'hyperlink']) && $form_state->getValue([
       'wrapper',
       'truncation',
       'max_length',
     ]) > 0) {
-      $form_state->setError($form['wrapper']['hyperlink'], t('Either hyperlinking or truncation can be used, but not both together on the same field. Disable one.'));
+      $form_state->setError($form['wrapper']['hyperlink'], $this->t('Either hyperlinking or truncation can be used, but not both together on the same field. Disable one.'));
       $form_state->setError($form['wrapper']['truncation']['max_length']);
     }
   }
 
-  public function submitForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     list($config_id, $escaped_field_name) = $form_state->getBuildInfo()['args'];
     $field_name = islandora_solr_restore_slashes($escaped_field_name);
 

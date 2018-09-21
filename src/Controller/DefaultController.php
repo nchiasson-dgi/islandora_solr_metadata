@@ -21,7 +21,7 @@ class DefaultController extends ControllerBase {
   /**
    * Title callback for solr metadata display configuration page.
    *
-   * @param $configuration_id
+   * @param int $configuration_id
    *   The integer ID for the desired metadata display configuration.
    */
   public function islandoraSolrMetadataDisplayConfigurationName($configuration_id) {
@@ -31,7 +31,7 @@ class DefaultController extends ControllerBase {
   /**
    * Access callback for solr metadata.
    *
-   * @param $configuration_id
+   * @param int $configuration_id
    *   The integer ID for the desired metadata display configuration.
    */
   public function islandoraSolrMetadataAccess($configuration_id) {
@@ -42,9 +42,9 @@ class DefaultController extends ControllerBase {
   /**
    * Title callback for solr metadata display field configuration page.
    *
-   * @param $config_id
+   * @param int $config_id
    *   The integer ID for the desired metadata display configuration.
-   * @param $escaped_field_name
+   * @param string $escaped_field_name
    *   The string containing the escaped field name.
    */
   public function islandoraSolrMetadataDisplayFieldConfigurationName($config_id, $escaped_field_name) {
@@ -55,9 +55,9 @@ class DefaultController extends ControllerBase {
   /**
    * Access callback for solr metadata field configuration.
    *
-   * @param $config_id
+   * @param int $config_id
    *   The integer ID for the desired metadata display configuration.
-   * @param $escaped_field_name
+   * @param string $escaped_field_name
    *   The string containing the escaped field name.
    */
   public function islandoraSolrMetadataFieldConfigurationAccess($config_id, $escaped_field_name) {

@@ -11,13 +11,12 @@
 function islandora_solr_metadata_configurations_features_export_options() {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   $configs = islandora_solr_metadata_get_associations();
-  $features_config = array();
+  $features_config = [];
   foreach ($configs as $config) {
     $features_config[$config['machine_name']] = $config['name'];
   }
   return $features_config;
 }
-
 
 /**
  * Implements hook_features_export().
@@ -34,7 +33,7 @@ function islandora_solr_metadata_configurations_features_export($data, &$export,
  */
 function islandora_solr_metadata_configurations_features_export_render($module_name, $data, $export = NULL) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  $code = array();
+  $code = [];
   foreach ($data as $machine_name) {
     $config_id = islandora_solr_metadata_retrieve_configuration_from_machine_name($machine_name);
     $fields = islandora_solr_metadata_get_fields($config_id, FALSE);
@@ -42,16 +41,16 @@ function islandora_solr_metadata_configurations_features_export_render($module_n
       unset($field['configuration_id']);
     }
     unset($field);
-    $code[$machine_name] = array(
+    $code[$machine_name] = [
       'fields' => $fields,
       'cmodels' => islandora_solr_metadata_get_cmodels($config_id),
       'description' => islandora_solr_metadata_retrieve_description($config_id, FALSE),
       'name' => islandora_solr_metadata_retrieve_configuration_name($config_id),
-    );
+    ];
   }
 
   $code = " return " . features_var_export($code) . ";";
-  return array('islandora_solr_metadata_configurations_default_fields' => $code);
+  return ['islandora_solr_metadata_configurations_default_fields' => $code];
 }
 
 /**
@@ -96,7 +95,7 @@ function islandora_solr_metadata_configurations_features_rebuild($module_name) {
       // Add fields and cmodels, related to config_id.
       islandora_solr_metadata_update_description($config_id, $config_info['description']['description_field'], $config_info['description']['description_label'], $config_info['description']['description_data']);
       islandora_solr_metadata_add_content_models($config_id, array_map(function ($e) {
-        return array('cmodel' => $e);
+        return ['cmodel' => $e];
       }, $config_info['cmodels']));
       islandora_solr_metadata_add_fields($config_id, $config_info['fields']);
     }

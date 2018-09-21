@@ -2,7 +2,9 @@
 
 ## Introduction
 
-Provides an interface to construct configurations used for displaying metadata on Islandora objects.
+Provides an interface to construct configurations used for displaying metadata
+on Islandora objects.
+
 
 ## Requirements
 
@@ -33,17 +35,33 @@ Manage » Configuration » Solr Index » Metadata Display
 
 ### Customization
 
-The backbone of this module is to allow users to select fields indexed in their Solr as what drives metadata displays. This allows for the creation of heterogenous displays pulled from many sources from something that is already easily available.
+The backbone of this module is to allow users to select fields indexed in their
+Solr as what drives metadata displays. This allows for the creation of
+heterogenous displays pulled from many sources from something that is
+already easily available.
 
-The Islandora Solr Metadata module uses templates to fuel the markup displayed when it's the defined viewer for an object. As such these are overwritable to alter the display of the metadata as seen fit.
+The Islandora Solr Metadata module uses templates to fuel the markup displayed
+when it's the defined viewer for an object. As such these are overwritable to
+alter the display of the metadata as seen fit.
 
-For a more indepth look at the metadata display framework and an example module implementation see the [Islandora wiki](https://github.com/Islandora/islandora/wiki/Metadata-Display-Viewers).
+For a more indepth look at the metadata display framework and an example module
+implementation see the [Islandora wiki](
+https://github.com/Islandora/islandora/wiki/Metadata-Display-Viewers).
 
-It's to be noted that you can have a content model associated with more than one configuration at a time. Similarly, on objects with two content models, two or more configurations could respond to display the markup for the object. These cases are handled by merging the displays based around the weight. Take for example the case where you have two responding configurations where the first configuration contains the a and c fields and the second the b and d fields. The metadata display output would then be in the following order: a, b, c, d. As such, it's at the discretion of the user, through the creation of configurations, to determine how they want their metadata to be displayed.
+It's to be noted that you can have a content model associated with more than one
+configuration at a time. Similarly, on objects with two content models, two or
+more configurations could respond to display the markup for the object. These
+cases are handled by merging the displays based around the weight. Take for
+example the case where you have two responding configurations where the first
+configuration contains the a and c fields and the second the b and d fields. The
+metadata display output would then be in the following order: a, b, c, d. As
+such, it's at the discretion of the user, through the creation of
+configurations, to determine how they want their metadata to be displayed.
 
 ## Documentation
 
-This module's documentation is also available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+Solr+Metadata).
+This module's documentation is also available at [our wiki](
+https://wiki.duraspace.org/display/ISLANDORA/Islandora+Solr+Metadata).
 
 ## Troubleshooting/Issues
 

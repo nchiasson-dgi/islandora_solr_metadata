@@ -5,7 +5,6 @@ namespace Drupal\islandora_solr_metadata\Form;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Url;
-use Drupal\Core\Link;
 
 /**
  * Admin form for solr metadata.
@@ -104,7 +103,7 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
       module_load_include('inc', 'islandora_solr_metadata', 'db');
       $config_exists = islandora_solr_metadata_retrieve_configuration_from_machine_name($form_state->getValue('machine_name'));
       if ($config_exists !== FALSE) {
-        $form_state->setErrorByName('machine_name', $this->t('The machine name of @machine already exists in the database!', array('@machine' => $form_state->getValue('machine_name'))));
+        $form_state->setErrorByName('machine_name', $this->t('The machine name of @machine already exists in the database!', ['@machine' => $form_state->getValue('machine_name')]));
       }
     }
   }
