@@ -125,9 +125,9 @@ function islandora_solr_metadata_display_field_configuration_name($configuration
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
 
-  return $this->t('@field configuration', array(
+  return t('@field configuration', [
     '@field' => islandora_solr_restore_slashes($escaped_field_name),
-  ));
+  ]);
 }
 
 /**

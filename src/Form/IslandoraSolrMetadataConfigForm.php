@@ -83,12 +83,12 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
         };
         $form_state->set(['field_data'], array_diff_key($form_state->get([
           'field_data',
-          ]), array_filter($form_state->getValue([
-            'islandora_solr_metadata_fields',
-            'table_wrapper',
-            'table',
-            'table',
-          ]), $to_remove)));
+        ]), array_filter($form_state->getValue([
+          'islandora_solr_metadata_fields',
+          'table_wrapper',
+          'table',
+          'table',
+        ]), $to_remove)));
       }
       if ($form_state->getTriggeringElement()['#name'] == 'islandora-solr-metadata-cmodels-add-cmodel') {
         $cmodel_to_add = [
@@ -151,9 +151,9 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       '#type' => 'tableselect',
       '#header' => [
         'cmodel' => [
-          'data' => $this->t('Content Model Name')
-          ]
+          'data' => $this->t('Content Model Name'),
         ],
+      ],
       '#options' => $cmodels_associated,
       '#empty' => $this->t('No content models associated.'),
     ];
@@ -270,10 +270,10 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       '#states' => [
         'visible' => [
           ':input[name="islandora_solr_metadata_fields[description_fieldset][available_solr_fields]"]' => [
-            'empty' => FALSE
-            ],
+            'empty' => FALSE,
           ],
         ],
+      ],
     ];
 
     // Add in truncation fields for description.
@@ -405,12 +405,15 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
         if (!in_array($solr_field, $luke_fields)) {
           $form_state->setErrorByName('islandora_solr_metadata_fields][description_fieldset][available_solr_fields', $this->t('The field @field is not a valid field within Solr!', [
             '@field' => $solr_field,
-            ]));
+          ]));
         }
       }
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
     $configuration_id = $form_state->getValue(['islandora_solr_metadata_configuration_id']);
@@ -432,7 +435,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
         'table_wrapper',
         'table',
         'table',
-      ])
+      ]);
       $rows = (NULL !== $form_state_row_values) ? $form_state_row_values : [];
       $fields_fs_mapped = array_map($remove_form_specifics, NestedArray::mergeDeep($form_state->get(['field_data']), $rows));
       $fields_db = islandora_solr_metadata_get_fields($configuration_id);

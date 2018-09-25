@@ -5,6 +5,8 @@
  */
 
 use Drupal\islandora_solr\IslandoraSolrQueryProcessor;
+use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Url;
 
 /**
  * Prepares variables for islandora_solr_metadata_display templates.
@@ -256,7 +258,7 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
               '!field' => $solr_field,
               '!value' => islandora_solr_facet_escape($original_value),
             ));
-            return \Drupal::l($value, \Drupal\Core\Url::fromRoute('islandora_solr.islandora_solr'));
+            return \Drupal::l($value, Url::fromRoute('islandora_solr.islandora_solr'));
           }
           return $value;
         };
@@ -289,7 +291,7 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
       // After values are omitted/dedupped filter down the displayed results.
       foreach ($solr_fields as &$field) {
         // Check if the field is configured to filter based on whole field.
-        if (($truncation = \Drupal\Component\Utility\NestedArray::getValue($field, array('truncation'))) && $truncation['max_length'] > 0 && isset($truncation['truncation_type']) && $truncation['truncation_type'] == 'whole_field_option') {
+        if (($truncation = NestedArray::getValue($field, ['truncation'])) && $truncation['max_length'] > 0 && isset($truncation['truncation_type']) && $truncation['truncation_type'] == 'whole_field_option') {
           // Keep the updated value stored in an array.
           $updated_value[] = islandora_solr_truncate_field_display($field['value'], $truncation['max_length'], $truncation['ellipsis'], $truncation['word_safe'], $truncation['min_wordsafe_length'], \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator'));
           // Replace value with updated field display.
@@ -299,14 +301,14 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
         // Apply rules configurations for this field as configured
         // on the metadata configuration page. Unset the field from
         // the $solr_fields array to prevent it from being shown.
-        $permission = \Drupal\Component\Utility\NestedArray::getValue($field, array('permissions'));
+        $permission = NestedArray::getValue($field, ['permissions']);
         if ($permission['enable_permissions'] && !array_intersect(array_keys($user->roles), $permission['permissions'])) {
           // Permissions are being enforced and none of our roles are allowed...
           unset($solr_fields[$field['solr_field']]);
         }
       }
 
-      uasort($solr_fields, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+      uasort($solr_fields, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
       return TRUE;
     }
     else {

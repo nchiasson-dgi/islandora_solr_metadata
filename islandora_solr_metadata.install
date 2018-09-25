@@ -11,98 +11,98 @@ use Drupal\filter\Entity\FilterFormat;
  * Implements hook_schema().
  */
 function islandora_solr_metadata_schema() {
-  $schema['islandora_solr_metadata_associations'] = array(
+  $schema['islandora_solr_metadata_associations'] = [
     'description' => 'Table that stores saved configuration names.',
-    'fields' => array(
-      'configuration_id' => array(
+    'fields' => [
+      'configuration_id' => [
         'description' => 'Unique ID given to each association',
         'type' => 'serial',
         'length' => 11,
         'not null' => TRUE,
-      ),
-      'configuration_name' => array(
+      ],
+      'configuration_name' => [
         'description' => 'The name of the configuration which this field belongs to',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-      'description_field' => array(
+      ],
+      'description_field' => [
         'type' => 'varchar',
         'length' => 255,
         'default' => NULL,
         'description' => 'The field name as indexed in Solr to be used for displaying description metadata',
-      ),
-      'description_label' => array(
+      ],
+      'description_label' => [
         'type' => 'varchar',
         'length' => 255,
         'description' => 'The label for the description metadata',
         'default' => NULL,
-      ),
-      'description_data' => array(
+      ],
+      'description_data' => [
         'type' => 'blob',
         'not null' => FALSE,
         'size' => 'big',
         'serialize' => TRUE,
         'description' => 'A serialized array of name value pairs that store extra description field settings.',
-      ),
-      'machine_name' => array(
+      ],
+      'machine_name' => [
         'type' => 'varchar',
         'length' => 255,
         'description' => 'The machine readable name for this association',
         'not null' => TRUE,
-      ),
-    ),
-    'primary key' => array('configuration_id'),
-  );
-  $schema['islandora_solr_metadata_fields'] = array(
+      ],
+    ],
+    'primary key' => ['configuration_id'],
+  ];
+  $schema['islandora_solr_metadata_fields'] = [
     'description' => 'Table that stores Islandora Solr Metadata field settings.',
-    'fields' => array(
-      'configuration_id' => array(
+    'fields' => [
+      'configuration_id' => [
         'type' => 'int',
         'length' => 11,
         'not null' => TRUE,
         'description' => 'The ID of the configuration which this field belongs to',
-      ),
-      'solr_field' => array(
+      ],
+      'solr_field' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'The field name as indexed in Solr',
-      ),
-      'data' => array(
+      ],
+      'data' => [
         'type' => 'blob',
         'not null' => FALSE,
         'size' => 'big',
         'serialize' => TRUE,
         'description' => 'A serialized array of name value pairs that store permissions field settings.',
-      ),
-      'weight' => array(
+      ],
+      'weight' => [
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
         'description' => 'Weight of the field within field type.',
-      ),
-    ),
-    'primary key' => array('configuration_id', array('solr_field', 191)),
-  );
-  $schema['islandora_solr_metadata_cmodels'] = array(
+      ],
+    ],
+    'primary key' => ['configuration_id', ['solr_field', 191]],
+  ];
+  $schema['islandora_solr_metadata_cmodels'] = [
     'description' => 'Table that stores content models associated to configurations',
-    'fields' => array(
-      'configuration_id' => array(
+    'fields' => [
+      'configuration_id' => [
         'type' => 'int',
         'length' => 11,
         'not null' => TRUE,
         'description' => 'The ID of the configuration which this field belongs to',
-      ),
-      'cmodel' => array(
+      ],
+      'cmodel' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'The name of the content model assigned to this configuration',
-      ),
-    ),
-    'primary_key' => array('configuration_id', array('cmodel', 191)),
-  );
+      ],
+    ],
+    'primary_key' => ['configuration_id', ['cmodel', 191]],
+  ];
   return $schema;
 }
 
