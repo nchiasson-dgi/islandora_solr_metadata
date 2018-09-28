@@ -436,7 +436,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
         'table',
         'table',
       ]);
-      $rows = (NULL !== $form_state_row_values) ? $form_state_row_values : [];
+      $rows = !empty($form_state_row_values) ? $form_state_row_values : [];
       $fields_fs_mapped = array_map($remove_form_specifics, NestedArray::mergeDeep($form_state->get(['field_data']), $rows));
       $fields_db = islandora_solr_metadata_get_fields($configuration_id);
 

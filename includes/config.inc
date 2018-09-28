@@ -8,19 +8,20 @@
 use Drupal\Core\Url;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * AJAX callback for the fields portion of the configuration form.
  *
  * @param array $form
  *   An array representing a Drupal form.
- * @param array $form_state
+ * @param Drupal\Core\Form\FormStateInterface $form_state
  *   An array representing the Drupal form state.
  *
  * @return array
  *   An array representing the portion of the form we are rendering.
  */
-function islandora_solr_metadata_fields_ajax(array &$form, array &$form_state) {
+function islandora_solr_metadata_fields_ajax(array &$form, FormStateInterface &$form_state) {
   return $form['islandora_solr_metadata_fields']['table_wrapper'];
 }
 
@@ -29,13 +30,13 @@ function islandora_solr_metadata_fields_ajax(array &$form, array &$form_state) {
  *
  * @param array $form
  *   An array representing a Drupal form.
- * @param array $form_state
+ * @param Drupal\Core\Form\FormStateInterface $form_state
  *   An array representing the Drupal form state.
  *
  * @return array
  *   An array representing the portion of the form we are rendering.
  */
-function islandora_solr_metadata_cmodels_ajax(array &$form, array &$form_state) {
+function islandora_solr_metadata_cmodels_ajax(array &$form, FormStateInterface &$form_state) {
   return $form['islandora_solr_metadata_cmodels']['table_wrapper'];
 }
 
@@ -283,7 +284,7 @@ function islandora_solr_metadata_config_field_form_validate(&$form, &$form_state
 /**
  * Form submission handler; save the configuration of the field.
  */
-function islandora_solr_metadata_config_field_form_submit(array &$form, array &$form_state) {
+function islandora_solr_metadata_config_field_form_submit(array &$form, FormStateInterface &$form_state) {
   list($config_id, $escaped_field_name) = $form_state['build_info']['args'];
   $field_name = islandora_solr_restore_slashes($escaped_field_name);
 
