@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Theme functions for the islandora_solr_metadata module.
@@ -6,12 +7,11 @@
 
 use Drupal\islandora_solr\IslandoraSolrQueryProcessor;
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Drupal\Component\Utility\Unicode;
 
 /**
  * Prepares variables for islandora_solr_metadata_display templates.
- *
- * Default template: islandora-solr-metadata-display.tpl.php
  *
  * @param array $variables
  *   An associative array containing:
@@ -25,9 +25,10 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora', 'includes/utilities');
   $variables['#attached']['library'][] = 'islandora_solr_metadata/display';
+  $variables['#attached']['library'][] = 'islandora_solr/toggle';
 
   $object = $variables['islandora_object'];
-  $db_fields = array();
+  $db_fields = [];
   $solr_fields =& $variables['solr_fields'];
   $associations = $variables['associations'];
 
@@ -40,9 +41,9 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
       continue;
     }
     // Make an array for use later on.
-    $solr_fields[$solr_field] = $value + array(
-      'value' => array(),
-    );
+    $solr_fields[$solr_field] = $value + [
+      'value' => [],
+    ];
   }
   $separator = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator');
 
@@ -55,10 +56,10 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   $variables['islandora_solr_metadata_omit_empty_values'] = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values');
 
   $variables['found'] = islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields']);
-  $variables['not_found_message'] = t('Document not present in Solr while generating the metadata display for @id. Try !reloading the page, or contact an administrator if this issue persists.', array(
+  $variables['not_found_message'] = t('Document not present in Solr while generating the metadata display for @id. Try @reloading the page, or contact an administrator if this issue persists.', [
     '@id' => $variables['islandora_object']->id,
-    '!reloading' => '<a href="" onclick="window.location.reload(true)">' . t('reloading') . '</a>',
-  ));
+    '@reloading' => '<a href="" onclick="window.location.reload(true)">' . t('reloading') . '</a>',
+  ]);
 
   foreach ($variables['solr_fields'] as &$solr_field) {
     $solr_field['value_filtered'] = check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html');
@@ -68,19 +69,17 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
 /**
  * Prepares variables for islandora_solr_metadata_description templates.
  *
- * Default template: islandora-solr-metadata-description.tpl.php
- *
  * @param array $variables
  *   An associative array containing:
  *   - islandora_object: The AbstractObject for which we are generating a
  *     metadata display.
  */
 function template_preprocess_islandora_solr_metadata_description(array &$variables) {
-  $object = $variables['islandora_object'];
   $solr_fields =& $variables['solr_fields'];
   $associations = $variables['associations'];
+  $variables['#attached']['library'][] = 'islandora_solr/toggle';
 
-  $descriptions = array();
+  $descriptions = [];
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   foreach ($associations as $configuration_id) {
     $description = islandora_solr_metadata_retrieve_description($configuration_id['configuration_id']);
@@ -90,11 +89,11 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
   }
   foreach ($descriptions as $description) {
     $desc_field = $description['description_field'];
-    $solr_fields[$desc_field] = array(
+    $solr_fields[$desc_field] = [
       'display_label' => $description['description_label'],
-      'value' => array(),
+      'value' => [],
       'description_data' => $description['description_data'],
-    );
+    ];
   }
   $separator = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator');
 
@@ -169,7 +168,7 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
  *   TRUE if we have found a document for the object in question; otherwise,
  *   FALSE.
  */
-function islandora_solr_metadata_query_fields($object, &$solr_fields) {
+function islandora_solr_metadata_query_fields(AbstractObject $object, array &$solr_fields) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   if (!empty($solr_fields)) {
     $user = \Drupal::currentUser();
@@ -191,12 +190,12 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
         // original value and it becomes a copy.
         $get_display_value = function ($original_value) use ($solr_field, &$solr_fields) {
           $value = $original_value;
-          $field_config = $solr_fields[$solr_field] + array(
+          $field_config = $solr_fields[$solr_field] + [
             'hyperlink' => 0,
             'formatter' => NULL,
             'uri_replacement' => '',
             'date_format' => '',
-          );
+          ];
           // Replace URI or PID with a configured field.
           if (!empty($field_config['uri_replacement'])) {
             module_load_include('inc', 'islandora', 'includes/utilities');
@@ -215,31 +214,21 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
               }
             }
           }
-          if (($truncation = \Drupal\Component\Utility\NestedArray::getValue($field_config, array('truncation'))) && $truncation['max_length'] > 0 && (!isset($truncation['truncation_type']) || $truncation['truncation_type'] == 'separate_value_option')) {
-            $value = \Drupal\Component\Utility\Unicode::truncate($value, $truncation['max_length'], $truncation['word_safe'], $truncation['ellipsis'], $truncation['min_wordsafe_length']);
+          if (($truncation = NestedArray::getValue($field_config, ['truncation'])) && $truncation['max_length'] > 0 && (!isset($truncation['truncation_type']) || $truncation['truncation_type'] == 'separate_value_option')) {
+            $value = Unicode::truncate($value, $truncation['max_length'], $truncation['word_safe'], $truncation['ellipsis'], $truncation['min_wordsafe_length']);
             if ($value !== $original_value) {
-              $mod_path = drupal_get_path('module', 'islandora_solr');
-              // @FIXME
-// The Assets API has totally changed. CSS, JavaScript, and libraries are now
-// attached directly to render arrays using the #attached property.
-// 
-// 
-// @see https://www.drupal.org/node/2169605
-// @see https://www.drupal.org/node/2408597
-// drupal_add_js("$mod_path/js/truncation-toggle.js");
-
               // XXX: implode()'ing to avoid newlines which get converted to
               // <br/>'s in the later check_markup.
-              return implode('', array(
+              return implode('', [
                 '<span class="toggle-wrapper">',
-                t("<span>!value <a href='#' class='toggler'>Show more</a></span>", array(
+                t("<span>!value <a href='#' class='toggler'>Show more</a></span>", [
                   '!value' => $value,
-                )),
-                t("<span>!original_value <a href='#' class='toggler'>Show less</a></span>", array(
+                ]),
+                t("<span>!original_value <a href='#' class='toggler'>Show less</a></span>", [
                   '!original_value' => $original_value,
-                )),
+                ]),
                 '</span>',
-              ));
+              ]);
             }
           }
           if (islandora_solr_is_date_field($solr_field) && !empty($solr_fields[$solr_field]['date_format'])) {
@@ -252,13 +241,20 @@ function islandora_solr_metadata_query_fields($object, &$solr_fields) {
             if (\Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values') && !trim($value)) {
               // Avoid generating markup (throwing off the "empty" check).
               // Will get stripped out later.
-              return;
+              return FALSE;
             }
-            $solr_query = format_string('!field:!value', array(
+            $solr_query = format_string('!field:!value', [
               '!field' => $solr_field,
               '!value' => islandora_solr_facet_escape($original_value),
-            ));
-            return \Drupal::l($value, Url::fromRoute('islandora_solr.islandora_solr'));
+            ]);
+            return Link::createFromRoute($value, 'islandora_solr.islandora_solr', [
+              "query" => [
+                "type" => "dismax",
+                "f" => [
+                  $solr_query,
+                ],
+              ],
+            ]);
           }
           return $value;
         };
