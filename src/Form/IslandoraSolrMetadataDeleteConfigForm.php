@@ -40,7 +40,7 @@ class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('islandora_solr_metadata.config_1', ['configuration_id' => $this->configurationId]);
+    return new Url('islandora_solr_metadata.config', ['configuration_id' => $this->configurationId]);
   }
 
   /**

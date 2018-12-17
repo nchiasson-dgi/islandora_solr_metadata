@@ -7,7 +7,7 @@ islandora_solr_metadata.metadata_display:
     _permission: 'administer islandora_solr_metadata'
   options:
     _admin_route: TRUE
-islandora_solr_metadata.config_1:
+islandora_solr_metadata.config:
   path: 'admin/config/islandora/search/islandora_solr_metadata/config/{configuration_id}'
   defaults:
     _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigForm'
@@ -19,7 +19,7 @@ islandora_solr_metadata.config_1:
     parameters:
       configuration_id:
         type: int
-islandora_solr_metadata.config_2:
+islandora_solr_metadata.config_field:
   path: 'admin/config/islandora/search/islandora_solr_metadata/config/{config_id}/{escaped_field_name}'
   defaults:
     _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigFieldForm'

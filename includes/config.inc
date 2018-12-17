@@ -82,7 +82,7 @@ function islandora_solr_metadata_management(array $data) {
           'edit' => [
             '#access' => isset($field['ajax-volatile']) ? !$field['ajax-volatile'] : TRUE,
             '#type' => 'link',
-            '#url' => Url::fromRoute('islandora_solr_metadata.config_2', ['config_id' => $field['configuration_id'], 'escaped_field_name' => islandora_solr_replace_slashes($field['solr_field'])]),
+            '#url' => Url::fromRoute('islandora_solr_metadata.config_field', ['config_id' => $field['configuration_id'], 'escaped_field_name' => islandora_solr_replace_slashes($field['solr_field'])]),
             '#title' => t('edit'),
           ],
         ],

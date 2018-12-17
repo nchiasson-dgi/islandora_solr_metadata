@@ -137,7 +137,7 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
     $field_info = $form_state->getValue(['wrapper']) + $field_info;
     islandora_solr_metadata_update_fields($config_id, [$field_info]);
 
-    $form_state->setRedirect('islandora_solr_metadata.config_1', ['configuration_id' => $config_id]);
+    $form_state->setRedirect('islandora_solr_metadata.config', ['configuration_id' => $config_id]);
   }
 
 }

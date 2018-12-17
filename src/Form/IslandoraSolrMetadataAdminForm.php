@@ -45,7 +45,7 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
         'name' => [
           '#type' => 'link',
           '#title' => $association['name'],
-          '#url' => Url::fromRoute('islandora_solr_metadata.config_1', ['configuration_id' => $association['id']]),
+          '#url' => Url::fromRoute('islandora_solr_metadata.config', ['configuration_id' => $association['id']]),
         ],
         'associated_cmodels' => $associated_cmodels,
         'machine_name' => [
