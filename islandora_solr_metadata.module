@@ -81,21 +81,6 @@ function islandora_solr_metadata_field_configuration_access($configuration_id, $
 }
 
 /**
- * Implements hook_features_api().
- */
-function islandora_solr_metadata_features_api() {
-  $mod_path = drupal_get_path('module', 'islandora_solr_metadata');
-  return [
-    'islandora_solr_metadata_configurations' => [
-      'name' => t('Islandora Solr Metadata Configurations'),
-      'file' => "$mod_path/includes/configurations.features.inc",
-      'default_hook' => 'islandora_solr_metadata_configurations_default_fields',
-      'feature_source' => TRUE,
-    ],
-  ];
-}
-
-/**
  * Title callback for the configuration display.
  *
  * @param int $configuration_id
