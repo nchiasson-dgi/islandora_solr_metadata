@@ -1,0 +1,4 @@
+islandora_solr_metadata.metadata_display:
+  route_name: islandora_solr_metadata.metadata_display
+  title: 'Metadata Display'
+  base_route: islandora_solr.admin_index_settings

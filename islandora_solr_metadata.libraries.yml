@@ -1,0 +1,4 @@
+display:
+  css:
+    theme:
+      css/islandora_solr_metadata.css: {}

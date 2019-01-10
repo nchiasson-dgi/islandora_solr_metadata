@@ -1,61 +1,16 @@
 <?php
+
 /**
  * @file
  * The main module file for the islandora_solr_metadata module.
  */
 
 /**
- * Implements hook_menu().
- */
-function islandora_solr_metadata_menu() {
-  $items = array();
-  $items['admin/islandora/search/islandora_solr/metadata'] = array(
-    'title' => 'Metadata Display',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5,
-    'page callback' => 'islandora_solr_metadata_admin_page_callback',
-    'access arguments' => array('administer islandora_solr_metadata'),
-    'file' => 'includes/admin.inc',
-  );
-  $items['admin/islandora/search/islandora_solr_metadata/config/%'] = array(
-    'title callback' => 'islandora_solr_metadata_display_configuration_name',
-    'title arguments' => array(5),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_solr_metadata_config_form', 5),
-    'access callback' => 'islandora_solr_metadata_access',
-    'access arguments' => array(5),
-    'file' => 'includes/config.inc',
-  );
-  $items['admin/islandora/search/islandora_solr_metadata/config/%/%'] = array(
-    'title callback' => 'islandora_solr_metadata_display_field_configuration_name',
-    'title arguments' => array(5, 6),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_solr_metadata_config_field_form', 5, 6),
-    'access callback' => 'islandora_solr_metadata_field_configuration_access',
-    'access arguments' => array(5, 6),
-    'file' => 'includes/config.inc',
-  );
-  $items['admin/islandora/search/islandora_solr_metadata/config/delete/%'] = array(
-    'title' => 'Delete display configuration',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_solr_metadata_delete_config_form', 6),
-    'access callback' => 'islandora_solr_metadata_access',
-    'access arguments' => array(6),
-    'file' => 'includes/delete.inc',
-  );
-  return $items;
-}
-
-/**
  * Implements hook_theme().
  */
 function islandora_solr_metadata_theme() {
-  return array(
-    'islandora_solr_metadata_management_table' => array(
-      'render element' => 'table',
-      'file' => 'theme/theme.inc',
-    ),
-    'islandora_solr_metadata_display' => array(
+  return [
+    'islandora_solr_metadata_display' => [
       'template' => 'theme/islandora-solr-metadata-display',
       // We can add PIDs to the end of this pattern in our preprocess function
       // and templates will be able to have have a pid appended to the
@@ -63,16 +18,16 @@ function islandora_solr_metadata_theme() {
       // An example template might be named:
       // "islandora-solr-metadata-display--islandora-27.tpl.php".
       'pattern' => 'islandora_solr_metadata_display__',
-      'variables' => array(
+      'variables' => [
         'islandora_object' => NULL,
         'print' => FALSE,
-        'solr_fields' => array(),
+        'solr_fields' => [],
         'found' => FALSE,
-        'associations' => array(),
-      ),
+        'associations' => [],
+      ],
       'file' => 'theme/theme.inc',
-    ),
-    'islandora_solr_metadata_description' => array(
+    ],
+    'islandora_solr_metadata_description' => [
       'template' => 'theme/islandora-solr-metadata-description',
       // We can add PIDs to the end of this pattern in our preprocess function
       // and templates will be able to have have a pid appended to the
@@ -80,27 +35,16 @@ function islandora_solr_metadata_theme() {
       // An example template might be named:
       // "islandora-solr-metadata-description--islandora-27.tpl.php".
       'pattern' => 'islandora_solr_metadata_description__',
-      'variables' => array(
+      'variables' => [
         'islandora_object' => NULL,
-        'solr_fields' => array(),
+        'solr_fields' => [],
         'combine' => TRUE,
         'found' => FALSE,
-        'associations' => array(),
-      ),
+        'associations' => [],
+      ],
       'file' => 'theme/theme.inc',
-    ),
-  );
-}
-
-/**
- * Implements hook_permission().
- */
-function islandora_solr_metadata_permission() {
-  return array(
-    'administer islandora_solr_metadata' => array(
-      'title' => 'Create and manage metadata display configurations',
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -114,7 +58,7 @@ function islandora_solr_metadata_permission() {
  */
 function islandora_solr_metadata_access($configuration_id) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  return islandora_solr_metadata_configuration_exists($configuration_id) && user_access('administer islandora_solr_metadata');
+  return islandora_solr_metadata_configuration_exists($configuration_id) && \Drupal::currentUser()->hasPermission('administer islandora_solr_metadata');
 }
 
 /**
@@ -137,20 +81,6 @@ function islandora_solr_metadata_field_configuration_access($configuration_id, $
 }
 
 /**
- * Implements hook_features_api().
- */
-function islandora_solr_metadata_features_api() {
-  $mod_path = drupal_get_path('module', 'islandora_solr_metadata');
-  return array(
-    'islandora_solr_metadata_configurations' => array(
-      'name' => t('Islandora Solr Metadata Configurations'),
-      'file' => "$mod_path/includes/configurations.features.inc",
-      'default_hook' => 'islandora_solr_metadata_configurations_default_fields',
-      'feature_source' => TRUE,
-    ),
-  );
-}
-/**
  * Title callback for the configuration display.
  *
  * @param int $configuration_id
@@ -162,9 +92,9 @@ function islandora_solr_metadata_features_api() {
 function islandora_solr_metadata_display_configuration_name($configuration_id) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   $configuration_name = islandora_solr_metadata_retrieve_configuration_name($configuration_id);
-  return t('@configuration_name display configuration', array(
+  return t('@configuration_name display configuration', [
     '@configuration_name' => $configuration_name,
-  ));
+  ]);
 }
 
 /**
@@ -180,39 +110,24 @@ function islandora_solr_metadata_display_field_configuration_name($configuration
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
 
-  $configuration_name = islandora_solr_metadata_retrieve_configuration_name($configuration_id);
-  return t('@field configuration', array(
+  return t('@field configuration', [
     '@field' => islandora_solr_restore_slashes($escaped_field_name),
-  ));
-}
-
-/**
- * Implements hook_i18n_string_info().
- */
-function islandora_solr_metadata_i18n_string_info() {
-  return array(
-    'islandora_solr_metadata' => array(
-      'title' => t('Islandora Solr Metadata'),
-      'description' => t('Translatable configuration names and display labels.'),
-      'format' => FALSE,
-      'list' => TRUE,
-    ),
-  );
+  ]);
 }
 
 /**
  * Implements hook_islandora_metadata_display_info().
  */
 function islandora_solr_metadata_islandora_metadata_display_info() {
-  return array(
-    'islandora_solr_metadata' => array(
+  return [
+    'islandora_solr_metadata' => [
       'label' => t('Islandora Solr Metadata'),
       'description' => t('Metadata display driven by the Islandora Solr Search module'),
       'metadata callback' => 'islandora_solr_metadata_display_callback',
       'description callback' => 'islandora_solr_metadata_description_callback',
       'configuration' => 'admin/islandora/search/islandora_solr/metadata',
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -228,14 +143,17 @@ function islandora_solr_metadata_islandora_metadata_display_info() {
  */
 function islandora_solr_metadata_display_callback(AbstractObject $object, $print = FALSE) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  $elements = array(
-    'islandora_object' => $object,
-    'print' => $print,
-    'associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
-  );
-  drupal_alter('islandora_solr_metadata_display_elements', $elements);
-  if (count($elements['associations']) > 0) {
-    return theme('islandora_solr_metadata_display', $elements);
+  $elements = [
+    '#islandora_object' => $object,
+    '#print' => $print,
+    '#associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
+  ];
+  \Drupal::moduleHandler()->alter('islandora_solr_metadata_display_elements', $elements);
+  if (count($elements['#associations']) > 0) {
+    $markup = [
+      '#theme' => 'islandora_solr_metadata_display',
+    ] + $elements;
+    return $markup;
   }
   else {
     return FALSE;
@@ -253,13 +171,18 @@ function islandora_solr_metadata_display_callback(AbstractObject $object, $print
  */
 function islandora_solr_metadata_description_callback(AbstractObject $object) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  $elements = array(
-    'islandora_object' => $object,
-    'associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
-  );
-  drupal_alter('islandora_solr_metadata_description_elements', $elements);
-  if (count($elements['associations']) > 0) {
-    return theme('islandora_solr_metadata_description', $elements);
+  module_load_include('module', 'islandora');
+  $object = islandora_object_load($object->id);
+  $elements = [
+    '#islandora_object' => $object,
+    '#associations' => islandora_solr_metadata_get_associations_by_cmodels($object->models),
+  ];
+  \Drupal::moduleHandler()->alter('islandora_solr_metadata_description_elements', $elements);
+  if (count($elements['#associations']) > 0) {
+    $markup = [
+      '#theme' => 'islandora_solr_metadata_description',
+    ] + $elements;
+    return $markup;
   }
   else {
     return FALSE;

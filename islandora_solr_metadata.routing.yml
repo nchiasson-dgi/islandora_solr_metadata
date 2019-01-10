@@ -1,0 +1,47 @@
+islandora_solr_metadata.metadata_display:
+  path: 'admin/config/islandora/search/islandora_solr/metadata'
+  defaults:
+    _title: 'Metadata Display'
+    _controller: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAdminPageCallback'
+  requirements:
+    _permission: 'administer islandora_solr_metadata'
+  options:
+    _admin_route: TRUE
+islandora_solr_metadata.config:
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{configuration_id}'
+  defaults:
+    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigForm'
+    _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayConfigurationName'
+  requirements:
+    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      configuration_id:
+        type: int
+islandora_solr_metadata.config_field:
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{config_id}/{escaped_field_name}'
+  defaults:
+    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigFieldForm'
+    _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayFieldConfigurationName'
+  requirements:
+    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataFieldConfigurationAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      config_id:
+        type: int
+      escaped_field_name:
+        type: string
+islandora_solr_metadata.config_delete:
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/delete/{configuration_id}'
+  defaults:
+    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataDeleteConfigForm'
+    _title: 'Delete display configuration'
+  requirements:
+    _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
+  options:
+    _admin_route: TRUE
+    parameters:
+      configuration_id:
+        type: int
