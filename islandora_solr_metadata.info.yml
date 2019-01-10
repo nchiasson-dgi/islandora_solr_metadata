@@ -4,6 +4,7 @@ dependencies:
   - :islandora_solr
 description: 'Construct metadata displays from Solr fields.'
 configure: islandora_solr_metadata.admin
+package: Islandora
 core: 8.x
 php: '5.5.9'
 type: module

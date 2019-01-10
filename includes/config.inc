@@ -6,7 +6,6 @@
  */
 
 use Drupal\Core\Url;
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Form\FormStateInterface;
 
