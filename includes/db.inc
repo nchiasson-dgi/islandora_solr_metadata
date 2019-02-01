@@ -110,7 +110,7 @@ function islandora_solr_metadata_get_fields($configuration_id) {
   $fields = $result->fetchAllAssoc('solr_field', PDO::FETCH_ASSOC);
   $deserialize_data = function ($field) {
     // Merge unserialized blob into field array.
-    $field += [unserialize($field['data'])];
+    $field += unserialize($field['data']);
 
     // Add in defaults.
     $field += [
