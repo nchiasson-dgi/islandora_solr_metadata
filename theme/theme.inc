@@ -62,7 +62,7 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   ]);
 
   foreach ($variables['solr_fields'] as &$solr_field) {
-    $solr_field['value_filtered'] = check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html');
+    $solr_field['value_filtered'] = !empty($solr_field['value']) ? check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html') : '';
   }
 }
 
@@ -221,11 +221,11 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
               // <br/>'s in the later check_markup.
               return implode('', [
                 '<span class="toggle-wrapper">',
-                t("<span>!value <a href='#' class='toggler'>Show more</a></span>", [
-                  '!value' => $value,
+                t("<span>@value <a href='#' class='toggler'>Show more</a></span>", [
+                  '@value' => $value,
                 ]),
-                t("<span>!original_value <a href='#' class='toggler'>Show less</a></span>", [
-                  '!original_value' => $original_value,
+                t("<span>@original_value <a href='#' class='toggler'>Show less</a></span>", [
+                  '@original_value' => $original_value,
                 ]),
                 '</span>',
               ]);
