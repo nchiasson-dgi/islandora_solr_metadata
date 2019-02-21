@@ -1,8 +1,6 @@
 langcode: en
 status: true
-dependencies:
-  module:
-    - islandora_solr_metadata
+dependencies: {}
 name: 'Islandora Solr Metadata Filtered HTML'
 format: islandora_solr_metadata_filtered_html
 weight: 0
