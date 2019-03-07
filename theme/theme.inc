@@ -81,8 +81,8 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
 
   $descriptions = [];
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  foreach ($associations as $configuration_id) {
-    $description = islandora_solr_metadata_retrieve_description($configuration_id['configuration_id']);
+  foreach ($associations as $configuration_name) {
+    $description = \Drupal::config('islandora_solr_metadata.configs')->get("configs.$configuration_name.description");
     if ($description['description_field'] !== NULL) {
       $descriptions[] = $description;
     }

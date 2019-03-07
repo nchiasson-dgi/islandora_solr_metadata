@@ -1,0 +1,13 @@
+services:
+  islandora_solr_metadata.config_subscriber:
+    class: Drupal\islandora_solr_metadata\IslandoraSolrMetadataConfigSubscriber
+    tags:
+      - {name: event_subscriber}
+  islandora_solr_metadata.config_factory:
+    class: Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataConfigFactory
+    tags:
+      - {name: service_collector, tag: config.factory.override, call: addOverride}
+    arguments:
+      - '@config.storage'
+      - '@event_dispatcher'
+      - '@config.typed'

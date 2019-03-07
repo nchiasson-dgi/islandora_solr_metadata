@@ -8,7 +8,7 @@ islandora_solr_metadata.metadata_display:
   options:
     _admin_route: TRUE
 islandora_solr_metadata.config:
-  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{configuration_id}'
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{configuration_name}'
   defaults:
     _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigForm'
     _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayConfigurationName'
@@ -17,10 +17,10 @@ islandora_solr_metadata.config:
   options:
     _admin_route: TRUE
     parameters:
-      configuration_id:
-        type: int
+      configuration_name:
+        type: string
 islandora_solr_metadata.config_field:
-  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{config_id}/{escaped_field_name}'
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/{config_name}/{escaped_field_name}'
   defaults:
     _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigFieldForm'
     _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayFieldConfigurationName'
@@ -29,12 +29,12 @@ islandora_solr_metadata.config_field:
   options:
     _admin_route: TRUE
     parameters:
-      config_id:
-        type: int
+      config_name:
+        type: string
       escaped_field_name:
         type: string
 islandora_solr_metadata.config_delete:
-  path: 'admin/config/islandora/search/islandora_solr_metadata/config/delete/{configuration_id}'
+  path: 'admin/config/islandora/search/islandora_solr_metadata/config/delete/{configuration_name}'
   defaults:
     _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataDeleteConfigForm'
     _title: 'Delete display configuration'
@@ -43,5 +43,5 @@ islandora_solr_metadata.config_delete:
   options:
     _admin_route: TRUE
     parameters:
-      configuration_id:
-        type: int
+      configuration_name:
+        type: string

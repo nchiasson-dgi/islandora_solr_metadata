@@ -48,14 +48,14 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $configuration_id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $configuration_name = NULL) {
     $form_state->loadInclude('islandora', 'inc', 'includes/content_model.autocomplete');
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/config');
     $cmodel_to_add = FALSE;
 
     if (NULL === $form_state->get(['field_data'])) {
-      $form_state->set(['field_data'], islandora_solr_metadata_get_fields($configuration_id, FALSE));
+      $form_state->set(['field_data'], islandora_solr_metadata_get_fields($configuration_name, FALSE));
     }
 
     // AJAX callback handling.
@@ -68,7 +68,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
           'available_solr_fields',
         ]);
         $form_state->set(['field_data', $field_name], [
-          'configuration_id' => $configuration_id,
+          'configuration_id' => $configuration_name,
           'solr_field' => $field_name,
           'display_label' => $field_name,
           // Arbitrary large sort weight so it always comes last.
@@ -113,9 +113,9 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       }
     }
     $form = ['#tree' => TRUE];
-    $form['islandora_solr_metadata_configuration_id'] = [
+    $form['islandora_solr_metadata_configuration_name'] = [
       '#type' => 'value',
-      '#value' => $configuration_id,
+      '#value' => $configuration_name,
     ];
 
     $form['islandora_solr_metadata_cmodels'] = [
@@ -140,7 +140,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       }
     }
     else {
-      $cmodels_associated = islandora_solr_metadata_get_cmodels($configuration_id);
+      $cmodels_associated = islandora_solr_metadata_get_cmodels($configuration_name);
     }
 
     if ($cmodel_to_add !== FALSE) {
@@ -254,7 +254,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       '#collapsed' => TRUE,
       '#collapsible' => FALSE,
     ];
-    $description = islandora_solr_metadata_retrieve_description($configuration_id, FALSE);
+    $description = \Drupal::config('islandora_solr_metadata.configs')->get("configs.$configuration_name.description");
     $form['islandora_solr_metadata_fields']['description_fieldset']['available_solr_fields'] = [
       '#type' => 'textfield',
       '#description' => $this->t('A field from within Solr'),
@@ -278,13 +278,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
 
     // Add in truncation fields for description.
     $truncation_config = [
-      'default_values' => [
-        'truncation_type' => $description['description_data']['truncation']['truncation_type'] ? $description['description_data']['truncation']['truncation_type'] : 'separate_value_option',
-        'max_length' => $description['description_data']['truncation']['max_length'] ? $description['description_data']['truncation']['max_length'] : 0,
-        'word_safe' => $description['description_data']['truncation']['word_safe'] ? $description['description_data']['truncation']['word_safe'] : FALSE,
-        'ellipsis' => $description['description_data']['truncation']['ellipsis'] ? $description['description_data']['truncation']['ellipsis'] : FALSE,
-        'min_wordsafe_length' => $description['description_data']['truncation']['min_wordsafe_length'] ? $description['description_data']['truncation']['min_wordsafe_length'] : 1,
-      ],
+      'default_values' => $description['truncation'],
       'min_wordsafe_length_input_path' => "islandora_solr_metadata_fields[description_fieldset][truncation][word_safe]",
     ];
     islandora_solr_metadata_add_truncation_to_form($form['islandora_solr_metadata_fields']['description_fieldset'], $truncation_config);
@@ -416,7 +410,7 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-    $configuration_id = $form_state->getValue(['islandora_solr_metadata_configuration_id']);
+    $configuration_name = $form_state->getValue(['islandora_solr_metadata_configuration_name']);
     if ($form_state->getTriggeringElement()['#value'] == 'Save configuration') {
       // Grab existing entries first for comparison.
       $remove_form_specifics = function ($field) {
@@ -438,34 +432,34 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
       ]);
       $rows = !empty($form_state_row_values) ? $form_state_row_values : [];
       $fields_fs_mapped = array_map($remove_form_specifics, NestedArray::mergeDeep($form_state->get(['field_data']), $rows));
-      $fields_db = islandora_solr_metadata_get_fields($configuration_id);
+      $fields_db = islandora_solr_metadata_get_fields($configuration_name);
 
-      $cmodels_db = islandora_solr_metadata_get_cmodels($configuration_id);
+      $cmodels_db = islandora_solr_metadata_get_cmodels($configuration_name);
       $cmodels_fs = $form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options'];
       $cmodels_deletion = array_diff_key($cmodels_db, $cmodels_fs);
       $cmodels_insertion = array_diff_key($cmodels_fs, $cmodels_db);
 
       // Handle insertion and deletion of content models first.
       if (count($cmodels_insertion)) {
-        islandora_solr_metadata_add_content_models($configuration_id, $cmodels_insertion);
+        islandora_solr_metadata_add_content_models($configuration_name, $cmodels_insertion);
       }
       if (count($cmodels_deletion)) {
-        islandora_solr_metadata_delete_content_models($configuration_id, $cmodels_deletion);
+        islandora_solr_metadata_delete_content_models($configuration_name, $cmodels_deletion);
       }
 
       $fields_deletion = array_diff_key($fields_db, $fields_fs_mapped);
       $fields_insertion = array_diff_key($fields_fs_mapped, $fields_db);
 
       if (count($fields_insertion)) {
-        islandora_solr_metadata_add_fields($configuration_id, $fields_insertion);
+        islandora_solr_metadata_add_fields($configuration_name, $fields_insertion);
       }
       if (count($fields_deletion)) {
-        islandora_solr_metadata_delete_fields($configuration_id, $fields_deletion);
+        islandora_solr_metadata_delete_fields($configuration_name, $fields_deletion);
       }
 
       $fields_update = array_intersect_key($fields_fs_mapped, $fields_db);
       if (count($fields_update)) {
-        islandora_solr_metadata_update_fields($configuration_id, $fields_update);
+        islandora_solr_metadata_update_fields($configuration_name, $fields_update);
       }
 
       $description_field = $form_state->getValue([
@@ -510,12 +504,12 @@ class IslandoraSolrMetadataConfigForm extends FormBase {
           'min_wordsafe_length',
         ]),
       ];
-      islandora_solr_metadata_update_description($configuration_id, $description_field, $description_label, $truncation_array);
+      islandora_solr_metadata_update_description($configuration_name, $description_field, $description_label, $truncation_array);
       drupal_set_message($this->t('The Solr metadata display configuration options have been saved.'));
     }
 
     if ($form_state->getTriggeringElement()['#value'] == 'Delete configuration') {
-      $url = Url::fromRoute('islandora_solr_metadata.config_delete', ['configuration_id' => $configuration_id]);
+      $url = Url::fromRoute('islandora_solr_metadata.config_delete', ['configuration_name' => $configuration_name]);
       $response = new RedirectResponse($url->toString());
       $request = $this->getRequest();
       // Save the session so things like messages get saved.

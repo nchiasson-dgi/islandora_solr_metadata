@@ -21,21 +21,21 @@ class DefaultController extends ControllerBase {
   /**
    * Title callback for solr metadata display configuration page.
    *
-   * @param int $configuration_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $configuration_name
+   *   The name of the desired metadata display configuration.
    */
-  public function islandoraSolrMetadataDisplayConfigurationName($configuration_id) {
-    return islandora_solr_metadata_display_configuration_name($configuration_id);
+  public function islandoraSolrMetadataDisplayConfigurationName($configuration_name) {
+    return islandora_solr_metadata_display_configuration_name($configuration_name);
   }
 
   /**
    * Access callback for solr metadata.
    *
-   * @param int $configuration_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $configuration_name
+   *   The name of the desired metadata display configuration.
    */
-  public function islandoraSolrMetadataAccess($configuration_id) {
-    $perm = islandora_solr_metadata_access($configuration_id);
+  public function islandoraSolrMetadataAccess($configuration_name) {
+    $perm = islandora_solr_metadata_access($configuration_name);
     return $perm ? AccessResult::allowed() : AccessResult::forbidden();
   }
 

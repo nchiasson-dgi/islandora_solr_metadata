@@ -1,0 +1,5 @@
+islandora_solr_metadata.display_translation:
+  title: 'Islandora Solr Metadata Display'
+  base_route_name: islandora_solr_metadata.config
+  names:
+    - islandora_solr_metadata.configs

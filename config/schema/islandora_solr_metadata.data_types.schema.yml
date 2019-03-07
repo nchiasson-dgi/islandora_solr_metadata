@@ -1,0 +1,65 @@
+islandora_solr_metadata.config:
+  type: mapping
+  label: Metadata Display Config
+  mapping:
+    fields:
+      type: islandora_solr_metadata.field
+    description:
+      type: mapping
+      label: Metadata Display Description
+      mapping:
+        description_field:
+          type: string
+          nullable: false
+        description_label:
+          type: label
+        truncation:
+          type: islandora_solr_metadata.truncation_options
+    cmodel_associations:
+      type: sequence
+      sequence:
+        type: string
+islandora_solr_metadata.field:
+  type: mapping
+  label: Metadata Display Field
+  mapping:
+    field:
+      type: string
+      nullable: false
+    weight:
+      type: integer
+    display_label:
+      type: label
+    hyperlink:
+      type: boolean
+    uri_replacement:
+      type: string
+      nullable: true
+    date_format:
+      type: string
+      nullable: true
+    truncation:
+      type: islandora_solr_metadata.truncation_options
+    enable_permissions:
+      type: boolean
+    permissions:
+      type: sequence
+      nullable: true
+      sequence:
+        type: integer
+        nullable: true
+islandora_solr_metadata.truncation_options:
+  type: mapping
+  label: Metadata Display Truncation Options
+  mapping:
+    truncation_type:
+      type: string
+      nullable: false
+    max_length:
+      type: integer
+    word_safe:
+      type: boolean
+    ellipsis:
+      type: boolean
+    min_wordsafe_length:
+      type: integer

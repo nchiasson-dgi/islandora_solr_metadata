@@ -50,15 +50,15 @@ function islandora_solr_metadata_theme() {
 /**
  * Access callback for accessing a configuration based upon ID.
  *
- * @param int $configuration_id
- *   The configuration ID of the list we are accessing.
+ * @param string $configuration_name
+ *   The name of the list we are accessing.
  *
  * @return bool
  *   TRUE if the user has permission and the list exists, FALSE otherwise.
  */
-function islandora_solr_metadata_access($configuration_id) {
+function islandora_solr_metadata_access($configuration_name) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  return islandora_solr_metadata_configuration_exists($configuration_id) && \Drupal::currentUser()->hasPermission('administer islandora_solr_metadata');
+  return islandora_solr_metadata_configuration_exists($configuration_name) && \Drupal::currentUser()->hasPermission('administer islandora_solr_metadata');
 }
 
 /**
@@ -83,15 +83,13 @@ function islandora_solr_metadata_field_configuration_access($configuration_id, $
 /**
  * Title callback for the configuration display.
  *
- * @param int $configuration_id
- *   The ID of the configuration we are retrieving the name of.
+ * @param string $configuration_name
+ *   The name of the configuration we are getting a title for.
  *
  * @return string
  *   The name of the configuration that is to be edited.
  */
-function islandora_solr_metadata_display_configuration_name($configuration_id) {
-  module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  $configuration_name = islandora_solr_metadata_retrieve_configuration_name($configuration_id);
+function islandora_solr_metadata_display_configuration_name($configuration_name) {
   return t('@configuration_name display configuration', [
     '@configuration_name' => $configuration_name,
   ]);
@@ -107,9 +105,7 @@ function islandora_solr_metadata_display_configuration_name($configuration_id) {
  *   The name of the configuration that is to be edited.
  */
 function islandora_solr_metadata_display_field_configuration_name($configuration_id, $escaped_field_name) {
-  module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
-
   return t('@field configuration', [
     '@field' => islandora_solr_restore_slashes($escaped_field_name),
   ]);

@@ -6,93 +6,20 @@
  */
 
 use Drupal\filter\Entity\FilterFormat;
+use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataDisplayConfig;
 
 /**
  * Implements hook_schema().
  */
 function islandora_solr_metadata_schema() {
-  $schema['islandora_solr_metadata_associations'] = [
-    'description' => 'Table that stores saved configuration names.',
-    'fields' => [
-      'configuration_id' => [
-        'description' => 'Unique ID given to each association',
-        'type' => 'serial',
-        'length' => 11,
-        'not null' => TRUE,
-      ],
-      'configuration_name' => [
-        'description' => 'The name of the configuration which this field belongs to',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-      'description_field' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'default' => NULL,
-        'description' => 'The field name as indexed in Solr to be used for displaying description metadata',
-      ],
-      'description_label' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'description' => 'The label for the description metadata',
-        'default' => NULL,
-      ],
-      'description_data' => [
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big',
-        'serialize' => TRUE,
-        'description' => 'A serialized array of name value pairs that store extra description field settings.',
-      ],
-      'machine_name' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'description' => 'The machine readable name for this association',
-        'not null' => TRUE,
-      ],
-    ],
-    'primary key' => ['configuration_id'],
-  ];
-  $schema['islandora_solr_metadata_fields'] = [
-    'description' => 'Table that stores Islandora Solr Metadata field settings.',
-    'fields' => [
-      'configuration_id' => [
-        'type' => 'int',
-        'length' => 11,
-        'not null' => TRUE,
-        'description' => 'The ID of the configuration which this field belongs to',
-      ],
-      'solr_field' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'description' => 'The field name as indexed in Solr',
-      ],
-      'data' => [
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big',
-        'serialize' => TRUE,
-        'description' => 'A serialized array of name value pairs that store permissions field settings.',
-      ],
-      'weight' => [
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => 'Weight of the field within field type.',
-      ],
-    ],
-    'primary key' => ['configuration_id', ['solr_field', 191]],
-  ];
   $schema['islandora_solr_metadata_cmodels'] = [
     'description' => 'Table that stores content models associated to configurations',
     'fields' => [
-      'configuration_id' => [
-        'type' => 'int',
-        'length' => 11,
+      'configuration_name' => [
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
-        'description' => 'The ID of the configuration which this field belongs to',
+        'description' => 'The name of the configuration which this field belongs to',
       ],
       'cmodel' => [
         'type' => 'varchar',
@@ -101,7 +28,90 @@ function islandora_solr_metadata_schema() {
         'description' => 'The name of the content model assigned to this configuration',
       ],
     ],
-    'primary_key' => ['configuration_id', ['cmodel', 191]],
+    'primary_key' => ['configuration_name', ['cmodel', 191]],
   ];
   return $schema;
+}
+
+/**
+ * Migrate old Drupal database fields into the new configuration.
+ */
+function islandora_solr_metadata_update_8000() {
+  $db = \Drupal::database();
+  $schema = $db->schema();
+
+  if (!$schema->tableExists('islandora_solr_metadata_fields') || !$schema->tableExists('islandora_solr_metadata_associations')) {
+    return t('No islandora_solr_metadata_fields table and/or islandora_solr_metadata_associations table found in the database; nothing to import');
+  }
+
+  // This table is going to be rebuilt as we create the new configs, so just get
+  // the data, dump it, and then reconfigure it.
+  $old_cmodel_assoc = $db->select('islandora_solr_metadata_cmodels', 'ismc')
+    ->fields('ismc', [])
+    ->execute()
+    ->fetchAll(PDO::FETCH_ASSOC);
+  $db->delete('islandora_solr_metadata_cmodels')
+    ->execute();
+  // Specifically in the case where this is being ported from Drupal 7,
+  // configurations no longer have integer identifiers, so this field needs to
+  // be replaced with the new version.
+  if ($schema->fieldExists('islandora_solr_metadata_cmodels', 'configuration_id')) {
+    $schema->dropPrimaryKey('islandora_solr_metadata_cmodels');
+    $schema->dropField('islandora_solr_metadata_cmodels', 'configuration_id');
+    $schema->addField('islandora_solr_metadata_cmodels',
+      'configuration_name',
+      [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The name of the configuration which this field belongs to',
+      ],
+      [
+        'primary_key' => ['configuration_name', ['cmodel', 191]],
+      ]);
+  }
+
+  $associations = $db->select('islandora_solr_metadata_associations', 'isma')
+    ->fields('isma', [])
+    ->execute()
+    ->fetchAllAssoc('configuration_name');
+  $config = \Drupal::configFactory()->getEditable('islandora_solr_metadata.configs');
+  $completed = 0;
+  foreach ($associations as $configuration_name => $association) {
+    $fields = $db->select('islandora_solr_metadata_fields', 'ismf')
+      ->fields('ismf', [])
+      ->condition('configuration_id', $association->configuration_id)
+      ->execute()
+      ->fetchAll(PDO::FETCH_ASSOC);
+    // Add the association proper.
+    $new_assoc = IslandoraSolrMetadataDisplayConfig::getEmptyConfig();
+    foreach ($old_cmodel_assoc as $old_assoc) {
+      if ($old_assoc['configuration_id'] == $association['configuration_id']) {
+        $new_assoc['cmodel_associations'][] = $old_assoc['cmodel'];
+      }
+    }
+    $new_assoc['description']['description_field'] = $association['description_field'];
+    $new_assoc['description']['description_label'] = $association['description_label'];
+    $truncation_info = unserialize($association['description_data']);
+    $new_assoc['description']['truncation'] = $truncation_info['truncation'];
+    $config->set($association['configuration_name'], $new_assoc);
+    // Add the fields.
+    foreach ($fields as &$field) {
+      $field += unserialize($field['data']);
+      $new_field = IslandoraSolrMetadataDisplayConfig::getEmptyField();
+      $new_field['weight'] = $field['weight'];
+      $new_field['display_label'] = isset($field['display_label']) ? $field['display_label'] : $field['solr_field'];
+      $new_field['hyperlink'] = isset($field['hyperlink']) ? (bool) $field['hyperlink'] : FALSE;
+      $new_field['uri_replacement'] = isset($field['uri_replacement']) ? $field['uri_replacement'] : NULL;
+      $new_field['truncation'] = $field['truncation'];
+      $new_field['enable_permissions'] = $field['permissions']['enable_permissions'];
+      $new_field['permissions'] = $field['permissions']['permissions'];
+      $config->setField($configuration_name, $field['solr_field'], $new_field);
+    }
+    $completed++;
+  }
+  $config->save(TRUE);
+  $schema->dropTable('islandora_solr_metadata_fields');
+  $schema->dropTable('islandora_solr_metadata_associations');
+  return t("Migrated @count Solr metadata configurations", ['@count' => $completed]);
 }
