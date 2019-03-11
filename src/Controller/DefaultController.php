@@ -36,7 +36,11 @@ class DefaultController extends ControllerBase {
    */
   public function islandoraSolrMetadataAccess($configuration_id) {
     $perm = islandora_solr_metadata_access($configuration_id);
-    return $perm ? AccessResult::allowed() : AccessResult::forbidden();
+    return AccessResult::allowedIf($perm)
+      ->cachePerPermissions()
+      // XXX: Should be made dependent on the configuration object/entity
+      // storing the configuration, after D8-237.
+      ->mergeCacheMaxAge(0);
   }
 
   /**
@@ -63,7 +67,11 @@ class DefaultController extends ControllerBase {
   public function islandoraSolrMetadataFieldConfigurationAccess($config_id, $escaped_field_name) {
     module_load_include('module', 'islandora_solr_metadata');
     $perm = islandora_solr_metadata_field_configuration_access($config_id, $escaped_field_name);
-    return $perm ? AccessResult::allowed() : AccessResult::forbidden();
+    return AccessResult::allowedIf($perm)
+      ->cachePerPermissions()
+      // XXX: Should be made dependent on the configuration object/entity
+      // storing the configuration, after D8-237.
+      ->mergeCacheMaxAge(0);
   }
 
 }
