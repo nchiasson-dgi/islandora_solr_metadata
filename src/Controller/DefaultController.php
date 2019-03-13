@@ -39,7 +39,7 @@ class DefaultController extends ControllerBase {
     return AccessResult::allowedIf($perm)
       ->cachePerPermissions()
       // XXX: Should be made dependent on the configuration object/entity
-      // storing the configuration, after D8-237.
+      // storing the configuration, after it's implemented.
       ->mergeCacheMaxAge(0);
   }
 
@@ -70,7 +70,7 @@ class DefaultController extends ControllerBase {
     return AccessResult::allowedIf($perm)
       ->cachePerPermissions()
       // XXX: Should be made dependent on the configuration object/entity
-      // storing the configuration, after D8-237.
+      // storing the configuration, after it's implemented.
       ->mergeCacheMaxAge(0);
   }
 
