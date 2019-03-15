@@ -5,8 +5,6 @@
  * Implementations of installation hooks.
  */
 
-use Drupal\filter\Entity\FilterFormat;
-
 /**
  * Implements hook_schema().
  */
