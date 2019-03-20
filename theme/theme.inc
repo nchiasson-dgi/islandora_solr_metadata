@@ -32,8 +32,8 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   $solr_fields =& $variables['solr_fields'];
   $associations = $variables['associations'];
 
-  foreach ($associations as $configuration_id) {
-    $field = islandora_solr_metadata_get_fields($configuration_id['configuration_id']);
+  foreach ($associations as $association) {
+    $field = islandora_solr_metadata_get_fields($association['configuration_name']);
     $db_fields = array_merge($db_fields, $field);
   }
   foreach ($db_fields as $solr_field => $value) {
@@ -62,7 +62,13 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   ]);
 
   foreach ($variables['solr_fields'] as &$solr_field) {
-    $solr_field['value_filtered'] = !empty($solr_field['value']) ? check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html') : '';
+    $field_value = reset($solr_field['value']);
+    if ($solr_field['hyperlink']) {
+      $solr_field['value_filtered'] = $field_value->toRenderable();
+    }
+    else {
+      $solr_field['value_filtered'] = !empty($field_value) ? check_markup($field_value, 'islandora_solr_metadata_filtered_html') : '';
+    }
   }
 }
 
@@ -81,8 +87,8 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
 
   $descriptions = [];
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  foreach ($associations as $configuration_name) {
-    $description = \Drupal::config('islandora_solr_metadata.configs')->get("configs.$configuration_name.description");
+  foreach ($associations as $association) {
+    $description = \Drupal::config('islandora_solr_metadata.configs')->get("configs.{$association['configuration_name']}.description");
     if ($description['description_field'] !== NULL) {
       $descriptions[] = $description;
     }
@@ -92,7 +98,8 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
     $solr_fields[$desc_field] = [
       'display_label' => $description['description_label'],
       'value' => [],
-      'description_data' => $description['description_data'],
+      'description_data' => [$description['truncation']],
+      'enable_permissions' => FALSE,
     ];
   }
   $separator = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator');
@@ -145,7 +152,8 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
     }
   }
   foreach ($variables['description'] as &$solr_field) {
-    $solr_field['value_filtered'] = check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html');
+    $field_value = reset($solr_field['value']);
+    $solr_field['value_filtered'] = check_markup($field_value, 'islandora_solr_metadata_filtered_html');
   }
 }
 
@@ -243,15 +251,12 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
               // Will get stripped out later.
               return FALSE;
             }
-            $solr_query = format_string('!field:!value', [
-              '!field' => $solr_field,
-              '!value' => islandora_solr_facet_escape($original_value),
-            ]);
-            return Link::createFromRoute($value, 'islandora_solr.islandora_solr', [
+            $escaped_value = islandora_solr_facet_escape($original_value);
+            return Link::createFromRoute($value, 'islandora_solr.islandora_solr', [], [
               "query" => [
                 "type" => "dismax",
                 "f" => [
-                  $solr_query,
+                  "$solr_field:$escaped_value",
                 ],
               ],
             ]);
@@ -297,8 +302,7 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
         // Apply rules configurations for this field as configured
         // on the metadata configuration page. Unset the field from
         // the $solr_fields array to prevent it from being shown.
-        $permission = NestedArray::getValue($field, ['permissions']);
-        if ($permission['enable_permissions'] && !array_intersect(array_keys($user->roles), $permission['permissions'])) {
+        if ($field['enable_permissions'] && !array_intersect(array_keys($user->getRoles()), $field['permissions'])) {
           // Permissions are being enforced and none of our roles are allowed...
           unset($solr_fields[$field['solr_field']]);
         }

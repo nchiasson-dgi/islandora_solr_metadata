@@ -5,7 +5,7 @@
  * This file contains DB query functions.
  */
 
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataDisplayConfig;
+use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
 
 /**
  * Get all display configurations based upon an object's content models.
@@ -37,11 +37,13 @@ function islandora_solr_metadata_get_associations_by_cmodels(array $cmodels) {
  *   The name of the configuration for which to grab the content models.
  *
  * @return array
- *   An array of content model PIDs.
+ *   An array of content model PIDs, mapped to keys so they can be used for
+ *   select elements.
  */
 function islandora_solr_metadata_get_cmodels($configuration_name) {
-  return \Drupal::config('islandora_solr_metadata.configs')
+  $associations = \Drupal::config('islandora_solr_metadata.configs')
     ->get("configs.$configuration_name.cmodel_associations");
+  return array_combine($associations, $associations);
 }
 
 /**
@@ -53,7 +55,7 @@ function islandora_solr_metadata_get_cmodels($configuration_name) {
 function islandora_solr_metadata_add_configuration($configuration_name) {
   \Drupal::service('config.factory')
     ->getEditable('islandora_solr_metadata.configs')
-    ->set("configs.$configuration_name", IslandoraSolrMetadataDisplayConfig::getEmptyConfig())
+    ->set("configs.$configuration_name", IslandoraSolrMetadataFieldConfig::getEmptyConfig())
     ->save();
 }
 
@@ -62,8 +64,6 @@ function islandora_solr_metadata_add_configuration($configuration_name) {
  *
  * XXX: This isn't strictly necessary anymore, but is being maintained because
  * it appears to be in place in custom modules. Could consider deprecating.
- *
- * @see IslandoraSolrMetadataDisplayConfig::getFields()
  *
  * @param string $configuration_name
  *   The name of the configuration for which to get the list of fields.
@@ -74,9 +74,11 @@ function islandora_solr_metadata_add_configuration($configuration_name) {
  *   - display_label
  *   - weight
  *   - solr_field.
+ *
+ * @see IslandoraSolrMetadataConfig::getFields()
  */
 function islandora_solr_metadata_get_fields($configuration_name) {
-  return \Drupal::config('islandora_solr_metadata.configs')
+  return \Drupal::service('islandora_solr_metadata.field_config')
     ->getFields($configuration_name);
 }
 
@@ -87,9 +89,9 @@ function islandora_solr_metadata_get_fields($configuration_name) {
  *   The name of the configuration to remove.
  */
 function islandora_solr_metadata_delete_configuration($configuration_name) {
-  \Drupal::config('islandora_solr_metadata.configs')
-    ->getEditable('configs')
-    ->clear($configuration_name)
+  \Drupal::service('config.factory')
+    ->getEditable('islandora_solr_metadata.configs')
+    ->clear("configs.$configuration_name")
     ->save();
 }
 
@@ -107,44 +109,9 @@ function islandora_solr_metadata_configuration_exists($configuration_name) {
 }
 
 /**
- * Add content models to a specified configuration ID.
- *
- * @param string $configuration_name
- *   The name of the configuration which to add to.
- * @param array $content_models
- *   An array of content model PIDs to add.
- */
-function islandora_solr_metadata_add_content_models($configuration_name, array $content_models) {
-  $query = db_insert('islandora_solr_metadata_cmodels')
-    ->fields(['configuration_name', 'cmodel']);
-  foreach ($content_models as $content_model) {
-    $query->values([
-      'configuration_name' => $configuration_name,
-      'cmodel' => $content_model,
-    ]);
-  }
-  $query->execute();
-}
-
-/**
- * Delete content models from a specified configuration ID.
- *
- * @param int $configuration_name
- *   The name of the configuration which to add to.
- * @param array $content_models
- *   An array of content model PIDs to remove.
- */
-function islandora_solr_metadata_delete_content_models($configuration_name, array $content_models) {
-  db_delete('islandora_solr_metadata_cmodels')
-    ->condition('cmodel', $content_models)
-    ->condition('configuration_name', $configuration_name)
-    ->execute();
-}
-
-/**
  * Add fields to a specified configuration ID.
  *
- * @TODO: Do we need this anymore?
+ * TODO: Do we even need this anymore?
  *
  * @param string $configuration_name
  *   The name of the configuration which to add to.
@@ -164,16 +131,12 @@ function islandora_solr_metadata_add_fields($configuration_name, array $fields) 
  *   An array of fields to remove.
  */
 function islandora_solr_metadata_delete_fields($configuration_name, array $fields) {
-  \Drupal::config('islandora_solr_metadata.configs')
-    ->getEditable('configs')
-    ->deleteFields($configuration_name, $fields)
-    ->save();
+  \Drupal::service('islandora_solr_metadata.field_config')
+    ->deleteFields($fields, $configuration_name);
 }
 
 /**
  * Adds or updates fields in a configuration given configuration ID.
- *
- * @see IslandoraSolrMetadataDisplayConfig::setFields()
  *
  * @param string $configuration_name
  *   The name of the configuration which to add to.
@@ -183,12 +146,12 @@ function islandora_solr_metadata_delete_fields($configuration_name, array $field
  *   - display_label
  *   - weight
  *   - solr_field.
+ *
+ * @see IslandoraSolrMetadataConfig::setFields()
  */
 function islandora_solr_metadata_update_fields($configuration_name, array $fields) {
-  \Drupal::config('islandora_solr_metadata.configs')
-    ->getEditable('configs')
-    ->setFields($configuration_name, $fields)
-    ->save();
+  \Drupal::service('islandora_solr_metadata.field_config')
+    ->setFields($fields, $configuration_name);
 }
 
 /**
@@ -230,12 +193,12 @@ function islandora_solr_metadata_update_description($configuration_name, $descri
   if (empty($description_field)) {
     $description_field = NULL;
     $description_label = NULL;
-    $description_data = NULL;
+    $truncation_data = [];
   }
-  \Drupal::config('islandora_solr_metadata.configs')
-    ->getEditable('configs')
-    ->set("$configuration_name.description.description_field", $description_field)
-    ->set("$configuration_name.description.description_label", $description_label)
-    ->set("$configuration_name.description.truncation", $truncation_data)
+  \Drupal::service('config.factory')
+    ->getEditable('islandora_solr_metadata.configs')
+    ->set("configs.$configuration_name.description.description_field", $description_field)
+    ->set("configs.$configuration_name.description.description_label", $description_label)
+    ->set("configs.$configuration_name.description.truncation", $truncation_data)
     ->save();
 }

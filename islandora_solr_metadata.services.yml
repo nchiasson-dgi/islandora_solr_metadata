@@ -1,13 +1,9 @@
 services:
+  islandora_solr_metadata.field_config:
+    class: Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig
+    arguments: ['@config.factory']
   islandora_solr_metadata.config_subscriber:
-    class: Drupal\islandora_solr_metadata\IslandoraSolrMetadataConfigSubscriber
+    class: Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataConfigSubscriber
+    arguments: ['@database']
     tags:
       - {name: event_subscriber}
-  islandora_solr_metadata.config_factory:
-    class: Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataConfigFactory
-    tags:
-      - {name: service_collector, tag: config.factory.override, call: addOverride}
-    arguments:
-      - '@config.storage'
-      - '@event_dispatcher'
-      - '@config.typed'

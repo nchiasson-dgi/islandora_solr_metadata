@@ -3,7 +3,10 @@ islandora_solr_metadata.config:
   label: Metadata Display Config
   mapping:
     fields:
-      type: islandora_solr_metadata.field
+      type: sequence
+      label: Display Fields
+      sequence:
+        type: islandora_solr_metadata.field
     description:
       type: mapping
       label: Metadata Display Description

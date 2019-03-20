@@ -5,8 +5,7 @@
  * Implementations of installation hooks.
  */
 
-use Drupal\filter\Entity\FilterFormat;
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataDisplayConfig;
+use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataConfig;
 
 /**
  * Implements hook_schema().
@@ -84,7 +83,7 @@ function islandora_solr_metadata_update_8000() {
       ->execute()
       ->fetchAll(PDO::FETCH_ASSOC);
     // Add the association proper.
-    $new_assoc = IslandoraSolrMetadataDisplayConfig::getEmptyConfig();
+    $new_assoc = IslandoraSolrMetadataConfig::getEmptyConfig();
     foreach ($old_cmodel_assoc as $old_assoc) {
       if ($old_assoc['configuration_id'] == $association['configuration_id']) {
         $new_assoc['cmodel_associations'][] = $old_assoc['cmodel'];
@@ -98,7 +97,7 @@ function islandora_solr_metadata_update_8000() {
     // Add the fields.
     foreach ($fields as &$field) {
       $field += unserialize($field['data']);
-      $new_field = IslandoraSolrMetadataDisplayConfig::getEmptyField();
+      $new_field = IslandoraSolrMetadataConfig::getEmptyField();
       $new_field['weight'] = $field['weight'];
       $new_field['display_label'] = isset($field['display_label']) ? $field['display_label'] : $field['solr_field'];
       $new_field['hyperlink'] = isset($field['hyperlink']) ? (bool) $field['hyperlink'] : FALSE;

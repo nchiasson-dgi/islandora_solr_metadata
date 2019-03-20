@@ -3,13 +3,13 @@
 namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Url;
 
 /**
  * Admin form for solr metadata.
  */
-class IslandoraSolrMetadataAdminForm extends FormBase {
+class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
@@ -21,13 +21,20 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function getEditableConfigNames() {
+    return ['islandora_solr_metadata.configs'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    $associations = array_keys(\Drupal::config('islandora_solr_metadata.configs')->get('configs'));
+    $associations = array_keys($this->config->get('configs'));
     $form = [];
     $rows = [];
     foreach ($associations as $association) {
-      $associated_cmodels = \Drupal::config('islandora_solr_metadata.configs')->get("configs.$association.cmodel_associations");
+      $associated_cmodels = $this->config->get("configs.$association.cmodel_associations");
       if (empty($associated_cmodels)) {
         $associated_cmodels = [
           '#type' => 'item',

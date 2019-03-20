@@ -2,14 +2,21 @@
 
 namespace Drupal\islandora_solr_metadata\Form;
 
+use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Component\Utility\NestedArray;
 
 /**
  * Form to configure fields in the solr metadata display.
  */
 class IslandoraSolrMetadataConfigFieldForm extends FormBase {
+
+  /**
+   * Field configuration object.
+   *
+   * @var \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig
+   */
+  protected $fieldConfig;
 
   /**
    * {@inheritdoc}
@@ -21,18 +28,32 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $config_id = NULL, $escaped_field_name = NULL) {
+  public function create(ContainerInterface $container) {
+    return new static(
+      $container->get('islandora_solr_metadata.field_config')
+    );
+  }
+
+  /**
+   * Constructor.
+   *
+   * @param \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig $field_config
+   *   The field configuration object to use.
+   */
+  public function __construct(IslandoraSolrMetadataFieldConfig $field_config) {
+    $this->fieldConfig = $field_config;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $config_name = NULL, $escaped_field_name = NULL) {
     $form_state->loadInclude('islandora_solr', 'inc', 'includes/utilities');
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/config');
     $form_state->loadInclude('islandora', 'inc', 'includes/content_model.autocomplete');
     $field_name = islandora_solr_restore_slashes($escaped_field_name);
-    $get_default = function ($value, $default = '') use ($config_id, $field_name) {
-      module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-      static $field_info = NULL;
-      if ($field_info === NULL) {
-        $fields = islandora_solr_metadata_get_fields($config_id);
-        $field_info = $fields[$field_name];
-      }
+    $field_info = $this->fieldConfig->getField($field_name, $config_name);
+    $get_default = function ($value, $default = '') use ($field_info) {
       $exists = FALSE;
       $looked_up = NestedArray::getValue($field_info, (array) $value, $exists);
       return $exists ? $looked_up : $default;
@@ -98,10 +119,10 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
       'min_wordsafe_length_input_path' => "wrapper[truncation][word_safe]",
     ];
     islandora_solr_metadata_add_truncation_to_form($set, $truncation_config);
-    $permissions = $get_default(['permissions'], [
-      'enable_permissions' => FALSE,
-      'permissions' => [],
-    ]);
+    $permissions = [
+      'enable_permissions' => $get_default('enable_permissions', FALSE),
+      'permissions' => $get_default('permissions', []),
+    ];
     islandora_solr_metadata_append_permissions_and_actions($permissions, $set);
 
     $form['submit'] = [
@@ -129,15 +150,17 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    list($config_id, $escaped_field_name) = $form_state->getBuildInfo()['args'];
+    list($config_name, $escaped_field_name) = $form_state->getBuildInfo()['args'];
     $field_name = islandora_solr_restore_slashes($escaped_field_name);
 
-    $fields = islandora_solr_metadata_get_fields($config_id);
+    $fields = islandora_solr_metadata_get_fields($config_name);
     $field_info = $fields[$field_name];
     $field_info = $form_state->getValue(['wrapper']) + $field_info;
-    islandora_solr_metadata_update_fields($config_id, [$field_info]);
+    $field_info['enable_permissions'] = $field_info['permissions']['enable_permissions'];
+    $field_info['permissions'] = $field_info['permissions']['permissions'];
+    $this->fieldConfig->setField($field_name, $field_info, $config_name);
 
-    $form_state->setRedirect('islandora_solr_metadata.config', ['configuration_id' => $config_id]);
+    $form_state->setRedirect('islandora_solr_metadata.config', ['configuration_name' => $config_name]);
   }
 
 }

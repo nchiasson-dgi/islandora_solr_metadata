@@ -13,4 +13,7 @@ islandora_solr_metadata.configs:
   label: Metadata Configurations
   mapping:
     configs:
-      type: islandora_solr_metadata.config
+      type: sequence
+      label: Metadata Configurations
+      sequence:
+        type: islandora_solr_metadata.config

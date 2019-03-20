@@ -56,10 +56,8 @@ function islandora_solr_metadata_management(array $data) {
   if ($data) {
     uasort($data, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
     $max_delta = max(count($data), 10);
-    $weight = 0;
-    $map = function ($field) use ($max_delta, &$weight) {
-      $weight++;
-      return [
+    foreach ($data as $field_name => $field) {
+      $rows[] = [
         '#attributes' => [
           'class' => [
             'draggable',
@@ -71,24 +69,24 @@ function islandora_solr_metadata_management(array $data) {
         ],
         'solr_field_markup' => [
           '#type' => 'item',
-          '#markup' => Xss::filter($field['solr_field']),
+          '#markup' => Xss::filter($field_name),
         ],
         'label' => [
           '#type' => 'item',
-          '#markup' => empty($field['display_label']) ? Xss::filter($field['solr_field']) : Xss::filter($field['display_label']),
+          '#markup' => empty($field['display_label']) ? Xss::filter($field_name) : Xss::filter($field['display_label']),
         ],
         'operations' => [
           'edit' => [
             '#access' => isset($field['ajax-volatile']) ? !$field['ajax-volatile'] : TRUE,
             '#type' => 'link',
-            '#url' => Url::fromRoute('islandora_solr_metadata.config_field', ['config_name' => $field['configuration_name'], 'escaped_field_name' => islandora_solr_replace_slashes($field['solr_field'])]),
+            '#url' => Url::fromRoute('islandora_solr_metadata.config_field', ['config_name' => $field['configuration_name'], 'escaped_field_name' => islandora_solr_replace_slashes($field_name)]),
             '#title' => t('edit'),
           ],
         ],
         'weight' => [
           '#type' => 'weight',
           '#delta' => $max_delta,
-          '#default_value' => $weight,
+          '#default_value' => $field['weight'],
           '#attributes' => [
             'class' => [
               'islandora-solr-metadata-weight',
@@ -96,8 +94,7 @@ function islandora_solr_metadata_management(array $data) {
           ],
         ],
       ];
-    };
-    $rows = array_map($map, $data);
+    }
   }
   // Add the table to the form.
   $form['#tree'] = TRUE;

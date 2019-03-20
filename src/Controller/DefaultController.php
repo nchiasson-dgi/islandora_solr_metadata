@@ -42,27 +42,27 @@ class DefaultController extends ControllerBase {
   /**
    * Title callback for solr metadata display field configuration page.
    *
-   * @param int $config_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $config_name
+   *   The name of the desired metadata display configuration.
    * @param string $escaped_field_name
    *   The string containing the escaped field name.
    */
-  public function islandoraSolrMetadataDisplayFieldConfigurationName($config_id, $escaped_field_name) {
+  public function islandoraSolrMetadataDisplayFieldConfigurationName($config_name, $escaped_field_name) {
     module_load_include('module', 'islandora_solr_metadata');
-    return islandora_solr_metadata_display_field_configuration_name($config_id, $escaped_field_name);
+    return islandora_solr_metadata_display_field_configuration_name($config_name, $escaped_field_name);
   }
 
   /**
    * Access callback for solr metadata field configuration.
    *
-   * @param int $config_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $config_name
+   *   The name of the desired metadata display configuration.
    * @param string $escaped_field_name
    *   The string containing the escaped field name.
    */
-  public function islandoraSolrMetadataFieldConfigurationAccess($config_id, $escaped_field_name) {
+  public function islandoraSolrMetadataFieldConfigurationAccess($config_name, $escaped_field_name) {
     module_load_include('module', 'islandora_solr_metadata');
-    $perm = islandora_solr_metadata_field_configuration_access($config_id, $escaped_field_name);
+    $perm = islandora_solr_metadata_field_configuration_access($config_name, $escaped_field_name);
     return $perm ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
