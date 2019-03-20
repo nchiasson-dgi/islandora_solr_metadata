@@ -27,7 +27,7 @@ class IslandoraSolrMetadataFieldConfig {
    *   The config factory to use for this field config.
    */
   public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->config = $config_factory->get('islandora_solr_metadata.configs');
+    $this->config = $config_factory->getEditable('islandora_solr_metadata.configs');
   }
 
   /**

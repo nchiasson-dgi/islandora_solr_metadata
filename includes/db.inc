@@ -5,8 +5,6 @@
  * This file contains DB query functions.
  */
 
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
-
 /**
  * Get all display configurations based upon an object's content models.
  *
@@ -44,19 +42,6 @@ function islandora_solr_metadata_get_cmodels($configuration_name) {
   $associations = \Drupal::config('islandora_solr_metadata.configs')
     ->get("configs.$configuration_name.cmodel_associations");
   return array_combine($associations, $associations);
-}
-
-/**
- * Create a new configuration.
- *
- * @param string $configuration_name
- *   The name of a configuration to add the the DB.
- */
-function islandora_solr_metadata_add_configuration($configuration_name) {
-  \Drupal::service('config.factory')
-    ->getEditable('islandora_solr_metadata.configs')
-    ->set("configs.$configuration_name", IslandoraSolrMetadataFieldConfig::getEmptyConfig())
-    ->save();
 }
 
 /**

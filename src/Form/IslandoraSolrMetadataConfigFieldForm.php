@@ -2,7 +2,9 @@
 
 namespace Drupal\islandora_solr_metadata\Form;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\NestedArray;
 
@@ -28,7 +30,7 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container) {
     return new static(
       $container->get('islandora_solr_metadata.field_config')
     );

@@ -10,7 +10,6 @@ use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\DrupalKernel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Utility\NestedArray;
 
 /**
  * Configuration form for solr metadata.
@@ -488,27 +487,8 @@ class IslandoraSolrMetadataConfigForm extends ConfigFormBase {
 
       $config->save();
 
-      // Grab existing entries first for comparison.
-      $remove_form_specifics = function ($field) {
-        return array_diff_key($field, array_combine([
-          'ajax-volatile',
-          'remove',
-          'remove_field',
-        ], [
-          'ajax-volatile',
-          'remove',
-          'remove_field',
-        ]));
-      };
-      $form_state_row_values = $form_state->getValue([
-        'islandora_solr_metadata_fields',
-        'table_wrapper',
-        'table',
-        'table',
-      ]);
-      $rows = !empty($form_state_row_values) ? $form_state_row_values : [];
-      $fields_db = islandora_solr_metadata_get_fields($configuration_name);
-      foreach (array_map($remove_form_specifics, NestedArray::mergeDeep($form_state->get(['field_data']), $rows)) as $field => $definition) {
+      $fields_db = $this->fieldConfig->getFields($configuration_name);
+      foreach ($form_state->get(['field_data']) as $field => $definition) {
         $fields_db[$field] = $definition;
       }
       $this->fieldConfig->setFields($fields_db, $configuration_name);

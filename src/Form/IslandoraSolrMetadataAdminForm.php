@@ -2,6 +2,7 @@
 
 namespace Drupal\islandora_solr_metadata\Form;
 
+use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Url;
@@ -22,7 +23,9 @@ class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getEditableConfigNames() {
-    return ['islandora_solr_metadata.configs'];
+    return [
+      'islandora_solr_metadata.configs',
+    ];
   }
 
   /**
@@ -30,11 +33,11 @@ class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    $associations = array_keys($this->config->get('configs'));
+    $associations = array_keys($this->config('islandora_solr_metadata.configs')->get('configs'));
     $form = [];
     $rows = [];
     foreach ($associations as $association) {
-      $associated_cmodels = $this->config->get("configs.$association.cmodel_associations");
+      $associated_cmodels = $this->config('islandora_solr_metadata.configs')->get("configs.$association.cmodel_associations");
       if (empty($associated_cmodels)) {
         $associated_cmodels = [
           '#type' => 'item',
@@ -99,8 +102,11 @@ class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    islandora_solr_metadata_add_configuration($form_state->getValue('configuration_name'));
-    drupal_set_message($this->t('A new empty configuration has been created for @config_name', ['@config_name' => $form_state->getValue('configuration_name')]));
+    $config_name = $form_state->getValue('configuration_name');
+    $this->config('islandora_solr_metadata.configs')
+      ->set("configs.$config_name", IslandoraSolrMetadataFieldConfig::getEmptyConfig())
+      ->save();
+    drupal_set_message($this->t('A new empty configuration has been created for @config_name', ['@config_name' => $config_name]));
   }
 
 }
