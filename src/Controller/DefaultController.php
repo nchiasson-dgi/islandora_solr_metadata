@@ -38,7 +38,7 @@ class DefaultController extends ControllerBase {
     $perm = islandora_solr_metadata_access($configuration_name);
     return AccessResult::allowedIf($perm)
       ->cachePerPermissions()
-      ->addCacheableDependency($this->config('islandora_solr_metadata.configs'))
+      ->addCacheableDependency($this->config('islandora_solr_metadata.configs'));
   }
 
   /**
@@ -67,7 +67,7 @@ class DefaultController extends ControllerBase {
     $perm = islandora_solr_metadata_field_configuration_access($config_name, $escaped_field_name);
     return AccessResult::allowedIf($perm)
       ->cachePerPermissions()
-      ->addCacheableDependency($this->config('islandora_solr_metadata.configs'))
+      ->addCacheableDependency($this->config('islandora_solr_metadata.configs'));
   }
 
 }
