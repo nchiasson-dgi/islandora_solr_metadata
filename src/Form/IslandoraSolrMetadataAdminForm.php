@@ -3,14 +3,41 @@
 namespace Drupal\islandora_solr_metadata\Form;
 
 use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Admin form for solr metadata.
  */
 class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
+
+  /**
+   * Solr metadata field configuration object.
+   *
+   * @var \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig
+   */
+  protected $fieldConfig;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('islandora_solr_metadata.field_config')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(ConfigFactoryInterface $config, IslandoraSolrMetadataFieldConfig $field_config) {
+    $this->config = $config;
+    $this->fieldConfig = $field_config;
+  }
 
   /**
    * {@inheritdoc}
@@ -104,7 +131,7 @@ class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
     $config_name = $form_state->getValue('configuration_name');
     $this->config('islandora_solr_metadata.configs')
-      ->set("configs.$config_name", IslandoraSolrMetadataFieldConfig::getEmptyConfig())
+      ->set("configs.$config_name", $this->fieldConfig->getEmptyConfig())
       ->save();
     drupal_set_message($this->t('A new empty configuration has been created for @config_name', ['@config_name' => $config_name]));
   }

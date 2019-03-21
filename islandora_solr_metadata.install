@@ -5,7 +5,7 @@
  * Implementations of installation hooks.
  */
 
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataConfig;
+use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
 
 /**
  * Implements hook_schema().
@@ -97,7 +97,7 @@ function islandora_solr_metadata_update_8000() {
     // Add the fields.
     foreach ($fields as &$field) {
       $field += unserialize($field['data']);
-      $new_field = IslandoraSolrMetadataConfig::getEmptyField();
+      $new_field = IslandoraSolrMetadataFieldConfig::getEmptyField();
       $new_field['weight'] = $field['weight'];
       $new_field['display_label'] = isset($field['display_label']) ? $field['display_label'] : $field['solr_field'];
       $new_field['hyperlink'] = isset($field['hyperlink']) ? (bool) $field['hyperlink'] : FALSE;
