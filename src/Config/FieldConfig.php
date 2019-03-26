@@ -110,17 +110,6 @@ class FieldConfig implements FieldConfigInterface, RefinableCacheableDependencyI
   }
 
   /**
-   * Defines the replacement string for periods in field names.
-   *
-   * @return string
-   *   The string to use to replace periods in machine names. This obviously
-   *   should not contain periods; if it does, your configs may blow up.
-   */
-  protected static function getPeriodReplacement() {
-    return '~dot~';
-  }
-
-  /**
    * Converts a Solr field into a field machine name.
    *
    * @param string $field_name
