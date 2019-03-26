@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Event subscriber to update cmodel associations table.
  */
-class IslandoraSolrMetadataConfigSubscriber implements EventSubscriberInterface {
+class ConfigSubscriber implements EventSubscriberInterface {
 
   /**
    * Database connection.
