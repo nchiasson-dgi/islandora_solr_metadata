@@ -2,7 +2,7 @@
 
 namespace Drupal\islandora_solr_metadata\Form;
 
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
+use Drupal\islandora_solr_metadata\Config\FieldConfigInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Configuration form for solr metadata.
  */
-class IslandoraSolrMetadataConfigForm extends ConfigFormBase {
+class ConfigForm extends ConfigFormBase {
 
   /**
    * Kernel object for dependency injection.
@@ -26,7 +26,7 @@ class IslandoraSolrMetadataConfigForm extends ConfigFormBase {
   /**
    * Field configuration object.
    *
-   * @var \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig
+   * @var \Drupal\islandora_solr_metadata\Config\FieldConfigInterface
    */
   protected $fieldConfig;
 
@@ -44,7 +44,7 @@ class IslandoraSolrMetadataConfigForm extends ConfigFormBase {
   /**
    * Constructor for dependency injection.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, DrupalKernel $kernel, IslandoraSolrMetadataFieldConfig $field_config) {
+  public function __construct(ConfigFactoryInterface $config_factory, DrupalKernel $kernel, FieldConfigInterface $field_config) {
     parent::__construct($config_factory);
     $this->kernel = $kernel;
     $this->fieldConfig = $field_config;

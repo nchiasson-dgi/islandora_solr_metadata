@@ -10,7 +10,7 @@ islandora_solr_metadata.metadata_display:
 islandora_solr_metadata.config:
   path: 'admin/config/islandora/search/islandora_solr_metadata/config/{configuration_name}'
   defaults:
-    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigForm'
+    _form: '\Drupal\islandora_solr_metadata\Form\ConfigForm'
     _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayConfigurationName'
   requirements:
     _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'
@@ -22,7 +22,7 @@ islandora_solr_metadata.config:
 islandora_solr_metadata.config_field:
   path: 'admin/config/islandora/search/islandora_solr_metadata/config/{config_name}/{escaped_field_name}'
   defaults:
-    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataConfigFieldForm'
+    _form: '\Drupal\islandora_solr_metadata\Form\ConfigFieldForm'
     _title_callback: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataDisplayFieldConfigurationName'
   requirements:
     _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataFieldConfigurationAccess'
@@ -36,7 +36,7 @@ islandora_solr_metadata.config_field:
 islandora_solr_metadata.config_delete:
   path: 'admin/config/islandora/search/islandora_solr_metadata/config/delete/{configuration_name}'
   defaults:
-    _form: '\Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataDeleteConfigForm'
+    _form: '\Drupal\islandora_solr_metadata\Form\DeleteConfigForm'
     _title: 'Delete display configuration'
   requirements:
     _custom_access: '\Drupal\islandora_solr_metadata\Controller\DefaultController::islandoraSolrMetadataAccess'

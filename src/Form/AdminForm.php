@@ -2,7 +2,7 @@
 
 namespace Drupal\islandora_solr_metadata\Form;
 
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
+use Drupal\islandora_solr_metadata\Config\FieldConfigInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -12,12 +12,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Admin form for solr metadata.
  */
-class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
+class AdminForm extends ConfigFormBase {
 
   /**
    * Solr metadata field configuration object.
    *
-   * @var \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig
+   * @var \Drupal\islandora_solr_metadata\Config\FieldConfigInterface
    */
   protected $fieldConfig;
 
@@ -34,7 +34,7 @@ class IslandoraSolrMetadataAdminForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $config, IslandoraSolrMetadataFieldConfig $field_config) {
+  public function __construct(ConfigFactoryInterface $config, FieldConfigInterface $field_config) {
     $this->config = $config;
     $this->fieldConfig = $field_config;
   }

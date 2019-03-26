@@ -9,7 +9,7 @@ use Drupal\Core\Url;
 /**
  * Confirmation form for when user decides to delete a configuration.
  */
-class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
+class DeleteConfigForm extends ConfirmFormBase {
 
   /**
    * The name of the item to delete.

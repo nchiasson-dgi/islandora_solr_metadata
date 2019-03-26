@@ -15,13 +15,13 @@ function islandora_solr_metadata_admin_page_callback() {
     'field_config' => [
       '#type' => 'details',
       '#title' => t('Field Configuration'),
-      'form' => \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataAdminForm'),
+      'form' => \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\AdminForm'),
       '#open' => FALSE,
     ],
     'general_config' => [
       '#type' => 'details',
       '#title' => t('General Configuration'),
-      'form' => \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\IslandoraSolrMetadataGeneralAdminForm'),
+      'form' => \Drupal::formBuilder()->getForm('Drupal\islandora_solr_metadata\Form\GeneralAdminForm'),
       '#open' => FALSE,
     ],
   ];
