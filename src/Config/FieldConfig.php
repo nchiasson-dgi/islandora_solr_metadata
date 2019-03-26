@@ -4,8 +4,8 @@ namespace Drupal\islandora_solr_metadata\Config;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Utility\SortArray;
-use Drupal\Core\Cache\RefineableCacheableDependencyInterface;
-use Drupal\Core\Cache\RefineableCacheableDependencyTrait;
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Cache\RefinableCacheableDependencyTrait;
 
 /**
  * Metadata display profile field config.
@@ -13,9 +13,9 @@ use Drupal\Core\Cache\RefineableCacheableDependencyTrait;
  * Provides implementing code a method of accessing field info by using
  * actual Solr field names.
  */
-class FieldConfig implements FieldConfigInterface, RefineableCacheableDependencyInterface {
+class FieldConfig implements FieldConfigInterface, RefinableCacheableDependencyInterface {
   use FieldConfigTrait;
-  use RefineableCacheableDependencyTrait;
+  use RefinableCacheableDependencyTrait;
 
   /**
    * Defines the replacement string for periods in field names.
