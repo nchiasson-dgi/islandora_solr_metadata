@@ -60,7 +60,7 @@ function islandora_solr_metadata_get_cmodels($configuration_name) {
  *   - weight
  *   - solr_field.
  *
- * @see FieldConfigInterface::getFields()
+ * @see \Drupal\islandora_solr_metadata\Config\FieldConfigInterface::getFields()
  */
 function islandora_solr_metadata_get_fields($configuration_name) {
   return \Drupal::service('islandora_solr_metadata.field_config')
@@ -132,7 +132,7 @@ function islandora_solr_metadata_delete_fields($configuration_name, array $field
  *   - weight
  *   - solr_field.
  *
- * @see FieldConfigInterface::setFields()
+ * @see \Drupal\islandora_solr_metadata\Config\FieldConfigInterface::setFields()
  */
 function islandora_solr_metadata_update_fields($configuration_name, array $fields) {
   \Drupal::service('islandora_solr_metadata.field_config')
