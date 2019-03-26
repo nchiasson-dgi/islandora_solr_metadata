@@ -45,7 +45,7 @@ class ConfigSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Refreshes content mdoel associations in the database.
+   * Refreshes content model associations in the database.
    */
   protected function refreshAssociations(Config $config) {
     $tx = $this->database->startTransaction();
