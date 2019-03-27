@@ -299,14 +299,12 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
           $field['value'] = $updated_value;
         }
 
-        // Apply rules configurations for this field as configured
-        // on the metadata configuration page. Unset the field from
-        // the $solr_fields array to prevent it from being shown.
-        if ($field['enable_permissions'] && !array_intersect(array_keys($user->getRoles()), $field['permissions'])) {
-          // Permissions are being enforced and none of our roles are allowed...
-          unset($solr_fields[$field['solr_field']]);
-        }
       }
+
+      $permissions_filter = function ($field) use ($user) {
+        return !$field['enable_permissions'] || array_intersect($user->getRoles(), $field['permissions']);
+      };
+      $solr_fields = array_filter($solr_fields, $permissions_filter);
 
       uasort($solr_fields, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
       return TRUE;
