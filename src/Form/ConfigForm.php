@@ -10,6 +10,7 @@ use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\DrupalKernel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Component\Utility\NestedArray;
 
 /**
  * Configuration form for solr metadata.
@@ -109,14 +110,12 @@ class ConfigForm extends ConfigFormBase {
         ]), $to_remove)));
       }
       if ($form_state->getTriggeringElement()['#name'] == 'islandora-solr-metadata-cmodels-add-cmodel') {
-        $cmodel_to_add = [
-          'cmodel' => $form_state->getValue([
-            'islandora_solr_metadata_cmodels',
-            'table_wrapper',
-            'cmodel_options',
-            'cmodel_select',
-          ]),
-        ];
+        $cmodel_to_add = $form_state->getValue([
+          'islandora_solr_metadata_cmodels',
+          'table_wrapper',
+          'cmodel_options',
+          'cmodel_select',
+        ]);
       }
       if ($form_state->getTriggeringElement()['#name'] == 'islandora-solr-metadata-cmodels-remove-selected') {
         foreach ($form_state->getValue([
@@ -149,12 +148,15 @@ class ConfigForm extends ConfigFormBase {
     // If there are values in the form_state use them for persistence in case of
     // AJAX callbacks, otherwise grab fresh values from the database.
     if (!empty($form_state->getValues())) {
-      if (NULL !== $form_state->getValue([
+      $table_offset = [
         'islandora_solr_metadata_cmodels',
         'table_wrapper',
         'table',
-      ])) {
-        $cmodels_associated = $form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options'];
+      ];
+      if (NULL !== $form_state->getValue($table_offset)) {
+        $submitted_table = NestedArray::getValue($form_state->getCompleteForm(), $table_offset);
+        $submitted_models = array_keys($submitted_table['#options']);
+        $cmodels_associated = array_combine($submitted_models, $submitted_models);
       }
     }
     else {
@@ -162,7 +164,7 @@ class ConfigForm extends ConfigFormBase {
     }
 
     if ($cmodel_to_add !== FALSE) {
-      $cmodels_associated[$cmodel_to_add['cmodel']] = $cmodel_to_add;
+      $cmodels_associated[$cmodel_to_add] = $cmodel_to_add;
     }
 
     $to_table = function ($cmodel) {
@@ -194,10 +196,7 @@ class ConfigForm extends ConfigFormBase {
 
     // Retrieve all content models and unset those currently in use in this
     // configuration and any others from other configurations.
-    $add_options = islandora_get_content_model_names();
-    foreach ($cmodels_associated as $entry) {
-      unset($add_options[$entry]);
-    }
+    $add_options = array_diff_key(islandora_get_content_model_names(), $cmodels_associated);
 
     if (!empty($add_options)) {
       $form['islandora_solr_metadata_cmodels']['table_wrapper']['cmodel_options'] = [
