@@ -36,7 +36,7 @@ function islandora_solr_metadata_schema() {
 /**
  * Migrate old Drupal database fields into the new configuration.
  */
-function islandora_solr_metadata_update_8000() {
+function islandora_solr_metadata_update_8001() {
   $db = \Drupal::database();
   $tx = $db->startTransaction();
   $schema = $db->schema();
@@ -46,7 +46,7 @@ function islandora_solr_metadata_update_8000() {
   }
 
   try {
-    $completed = _islandora_solr_metadata_update_8000($db, $schema);
+    $completed = _islandora_solr_metadata_update_8001($db, $schema);
     return t("Migrated @count Solr metadata configurations", ['@count' => $completed]);
   }
   catch (Exception $e) {
@@ -56,14 +56,14 @@ function islandora_solr_metadata_update_8000() {
 }
 
 /**
- * Helper; bulk of the logic for islandora_solr_metadata_update_8000().
+ * Helper; bulk of the logic for islandora_solr_metadata_update_8001().
  *
  * @param \Drupal\Core\Database\Connection $db
  *   An established DB connection.
  * @param \Drupal\Core\Database\Schema $schema
  *   The DB schema.
  */
-function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
+function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
   // This table is going to be rebuilt as we create the new configs, so just get
   // the data, dump it, and then reconfigure it.
   $old_cmodel_assoc = $db->select('islandora_solr_metadata_cmodels', 'ismc')
@@ -94,18 +94,33 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
   $associations = $db->select('islandora_solr_metadata_associations', 'isma')
     ->fields('isma', [])
     ->execute()
-    ->fetchAllAssoc('configuration_name');
+    ->fetchAllAssoc('configuration_name', PDO::FETCH_ASSOC);
   $config = \Drupal::configFactory()->getEditable('islandora_solr_metadata.configs');
 
   // Only grabbing the class, since we only use static methods here.
-  $field_config = get_class(\Drupal::service('islandora_solr_metadata.field_config'));
-  $empty_field = $field_config::getEmptyField();
+  $field_config = \Drupal::service('islandora_solr_metadata.field_config');
+  $empty_field = get_class($field_config)::getEmptyField();
+
+  $apply_truncation_casts = function ($truncation) {
+    $casts = [
+      'max_length' => 'int',
+      'word_safe' => 'bool',
+      'ellipsis' => 'bool',
+      'min_wordsafe_length' => 'int',
+    ];
+
+    foreach ($casts as $offset => $actual_type) {
+      settype($truncation[$offset], $actual_type);
+    }
+
+    return $truncation;
+  };
 
   $completed = 0;
   foreach ($associations as $configuration_name => $association) {
     $fields = $db->select('islandora_solr_metadata_fields', 'ismf')
       ->fields('ismf', [])
-      ->condition('configuration_id', $association->configuration_id)
+      ->condition('configuration_id', $association['configuration_id'])
       ->execute()
       ->fetchAll(PDO::FETCH_ASSOC);
     // Add the association proper.
@@ -119,7 +134,7 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
     $new_assoc['description'] = [
       'description_field' => $association['description_field'],
       'description_label' => $association['description_label'],
-      'truncation' => unserialize($association['description_data'])['truncation'],
+      'truncation' => $apply_truncation_casts(unserialize($association['description_data'])['truncation']),
     ];
 
     assert(0 === \Drupal::service('config.typed')
@@ -133,6 +148,8 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
       $field += unserialize($field['data']);
 
       $new_field = array_intersect_key($field, $empty_field) + $empty_field;
+
+      $new_field['truncation'] = $apply_truncation_casts($new_field['truncation']);
 
       assert(0 === \Drupal::service('config.typed')
         ->createFromNameAndData('islandora_solr_metadata.truncation_options', $field['truncation'])
@@ -157,7 +174,7 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
         ->validate()
         ->count(), "$configuration_name/{$field['solr_field']} field is valid.");
 
-      $config->setField($configuration_name, $field['solr_field'], $new_field);
+      $field_config->setField($field['solr_field'], $new_field, $configuration_name);
     }
     $completed++;
   }
