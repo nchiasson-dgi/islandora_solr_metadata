@@ -433,51 +433,16 @@ class ConfigForm extends ConfigFormBase {
 
       $config->set("configs.$configuration_name.cmodel_associations", array_keys($form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options']));
 
-      $description_field = $form_state->getValue([
+      $desc_info = $form_state->getValue([
         'islandora_solr_metadata_fields',
         'description_fieldset',
-        'available_solr_fields',
       ]);
-      $description_label = $form_state->getValue([
-        'islandora_solr_metadata_fields',
-        'description_fieldset',
-        'display_label',
+
+      $config->set("configs.$configuration_name.description", [
+        'description_field' => $desc_info['available_solr_fields'],
+        'description_label' => $desc_info['display_label'],
+        'truncation' => $desc_info['truncation'],
       ]);
-      $truncation_array = [
-        'truncation_type' => $form_state->getValue([
-          'islandora_solr_metadata_fields',
-          'description_fieldset',
-          'truncation',
-          'truncation_type',
-        ]),
-        'max_length' => $form_state->getValue([
-          'islandora_solr_metadata_fields',
-          'description_fieldset',
-          'truncation',
-          'max_length',
-        ]),
-        'word_safe' => $form_state->getValue([
-          'islandora_solr_metadata_fields',
-          'description_fieldset',
-          'truncation',
-          'word_safe',
-        ]),
-        'ellipsis' => $form_state->getValue([
-          'islandora_solr_metadata_fields',
-          'description_fieldset',
-          'truncation',
-          'ellipsis',
-        ]),
-        'min_wordsafe_length' => $form_state->getValue([
-          'islandora_solr_metadata_fields',
-          'description_fieldset',
-          'truncation',
-          'min_wordsafe_length',
-        ]),
-      ];
-      $config->set("configs.$configuration_name.description.description_field", $description_field);
-      $config->set("configs.$configuration_name.description.description_label", $description_label);
-      $config->set("configs.$configuration_name.description.truncation", $truncation_array);
 
       $config->save();
 
