@@ -57,7 +57,7 @@ function islandora_solr_metadata_management(array $data) {
     uasort($data, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
     $max_delta = max(count($data), 10);
     foreach ($data as $field_name => $field) {
-      $rows[] = [
+      $rows[$field_name] = [
         '#attributes' => [
           'class' => [
             'draggable',
