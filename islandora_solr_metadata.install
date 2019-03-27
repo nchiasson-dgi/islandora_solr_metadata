@@ -99,6 +99,8 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
 
   // Only grabbing the class, since we only use static methods here.
   $field_config = get_class(\Drupal::service('islandora_solr_metadata.field_config'));
+  $empty_field = $field_config::getEmptyField();
+
   $completed = 0;
   foreach ($associations as $configuration_name => $association) {
     $fields = $db->select('islandora_solr_metadata_fields', 'ismf')
@@ -130,7 +132,7 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
     foreach ($fields as $field) {
       $field += unserialize($field['data']);
 
-      $new_field = array_intersect_key($field, $field_config::getEmptyField());
+      $new_field = array_intersect_key($field, $empty_field) + $empty_field;
 
       assert(0 === \Drupal::service('config.typed')
         ->createFromNameAndData('islandora_solr_metadata.truncation_options', $field['truncation'])

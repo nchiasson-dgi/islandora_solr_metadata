@@ -14,7 +14,7 @@ trait FieldConfigTrait {
    *   An empty Solr metadata display field config.
    */
   public static function getEmptyField() {
-    return [
+    $def = [
       'weight' => 0,
       'display_label' => '',
       'hyperlink' => FALSE,
@@ -24,6 +24,13 @@ trait FieldConfigTrait {
       'permissions' => [],
       'truncation' => static::getEmptyTruncation(),
     ];
+
+    assert(0 === \Drupal::service('config.typed')
+      ->createFromNameAndData('islandora_solr_metadata.field', $def)
+      ->validate()
+      ->count(), "Default empty field config is valid.");
+
+    return $def;
   }
 
   /**
@@ -33,7 +40,7 @@ trait FieldConfigTrait {
    *   An empty Solr metadata display config.
    */
   public static function getEmptyConfig() {
-    return [
+    $def = [
       'cmodel_associations' => [],
       'description' => [
         'description_field' => '',
@@ -42,6 +49,13 @@ trait FieldConfigTrait {
       ],
       'fields' => [],
     ];
+
+    assert(0 === \Drupal::service('config.typed')
+      ->createFromNameAndData('islandora_solr_metadata.config', $def)
+      ->validate()
+      ->count(), "Default empty config is valid.");
+
+    return $def;
   }
 
   /**
@@ -51,13 +65,20 @@ trait FieldConfigTrait {
    *   An empty truncation configuration.
    */
   protected static function getEmptyTruncation() {
-    return [
+    $def = [
       'truncation_type' => 'separate_value_option',
       'max_length' => 0,
       'word_safe' => FALSE,
       'ellipsis' => FALSE,
       'min_wordsafe_length' => 0,
     ];
+
+    assert(0 === \Drupal::service('config.typed')
+      ->createFromNameAndData('islandora_solr_metadata.truncation_options', $def)
+      ->validate()
+      ->count(), "Default truncation config is valid.");
+
+    return $def;
   }
 
 }
