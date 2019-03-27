@@ -67,6 +67,16 @@ interface FieldConfigInterface {
   public function deleteFields(array $fields, $config_name);
 
   /**
+   * Atomically replace all the defined fields in the given configuration.
+   *
+   * @param array $fields
+   *   The fields definitions to configure.
+   * @param string $config_name
+   *   The name of the configuration.
+   */
+  public function replaceFields(array $fields, $config_name);
+
+  /**
    * Gets an empty config using the default settings.
    *
    * @return array

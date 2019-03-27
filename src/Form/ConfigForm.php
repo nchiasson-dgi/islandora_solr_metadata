@@ -6,9 +6,6 @@ use Drupal\islandora_solr_metadata\Config\FieldConfigInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfigFormBase;
-use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\Core\DrupalKernel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\NestedArray;
 
@@ -16,13 +13,6 @@ use Drupal\Component\Utility\NestedArray;
  * Configuration form for solr metadata.
  */
 class ConfigForm extends ConfigFormBase {
-
-  /**
-   * Kernel object for dependency injection.
-   *
-   * @var \Drupal\Core\DrupalKernel
-   */
-  protected $kernel;
 
   /**
    * Field configuration object.
@@ -37,7 +27,6 @@ class ConfigForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('kernel'),
       $container->get('islandora_solr_metadata.field_config')
     );
   }
@@ -45,9 +34,8 @@ class ConfigForm extends ConfigFormBase {
   /**
    * Constructor for dependency injection.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, DrupalKernel $kernel, FieldConfigInterface $field_config) {
+  public function __construct(ConfigFactoryInterface $config_factory, FieldConfigInterface $field_config) {
     parent::__construct($config_factory);
-    $this->kernel = $kernel;
     $this->fieldConfig = $field_config;
   }
 
@@ -100,14 +88,21 @@ class ConfigForm extends ConfigFormBase {
         $to_remove = function ($row) {
           return $row['remove_field'];
         };
-        $form_state->set(['field_data'], array_diff_key($form_state->get([
-          'field_data',
-        ]), array_filter($form_state->getValue([
-          'islandora_solr_metadata_fields',
-          'table_wrapper',
-          'table',
-          'table',
-        ]), $to_remove)));
+        $form_state->set(
+          ['field_data'],
+          array_diff_key(
+            $form_state->get(['field_data']),
+            array_filter(
+              $form_state->getValue([
+                'islandora_solr_metadata_fields',
+                'table_wrapper',
+                'table',
+                'table',
+              ]),
+              $to_remove
+            )
+          )
+        );
       }
       if ($form_state->getTriggeringElement()['#name'] == 'islandora-solr-metadata-cmodels-add-cmodel') {
         $cmodel_to_add = $form_state->getValue([
@@ -486,25 +481,15 @@ class ConfigForm extends ConfigFormBase {
 
       $config->save();
 
-      $fields_db = $this->fieldConfig->getFields($configuration_name);
-      foreach ($form_state->get(['field_data']) as $field => $definition) {
-        $fields_db[$field] = $definition;
-      }
-      $this->fieldConfig->setFields($fields_db, $configuration_name);
+      $this->fieldConfig->replaceFields($form_state->get(['field_data']), $configuration_name);
 
       drupal_set_message($this->t('The Solr metadata display configuration options have been saved.'));
     }
 
-    if ($form_state->getTriggeringElement()['#value'] == 'Delete configuration') {
-      $url = Url::fromRoute('islandora_solr_metadata.config_delete', ['configuration_name' => $configuration_name]);
-      $response = new RedirectResponse($url->toString());
-      $request = $this->getRequest();
-      // Save the session so things like messages get saved.
-      $request->getSession()->save();
-      $response->prepare($request);
-      // Make sure to trigger kernel events.
-      $this->kernel->terminate($request, $response);
-      $response->send();
+    if (reset($form_state->getTriggeringElement()['#array_parents']) == 'islandora_solr_metadata_delete') {
+      $form_state->setRedirect('islandora_solr_metadata.config_delete', [
+        'configuration_name' => $configuration_name,
+      ]);
     }
 
   }

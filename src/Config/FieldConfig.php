@@ -67,15 +67,32 @@ class FieldConfig implements FieldConfigInterface, RefinableCacheableDependencyI
    */
   public function setFields(array $fields, $config_name) {
     foreach ($fields as $field => $config) {
-      $this->setField($field, $config, $config_name);
+      $this->internalSetField($field, $config, $config_name);
     }
+    $this->config->save();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setField($field_name, array $config, $config_name) {
+    $this->internalSetField($field_name, $config, $config_name);
+
+    $this->config
+      ->save();
+  }
+
+  /**
+   * Set field helper.
+   *
+   * Set the field in the config object, but avoid saving immediately so
+   * multiple fields can be rolled in a particular call.
+   *
+   * @see ::setField()
+   */
+  protected function internalSetField($field_name, array $config, $config_name) {
     $machine_name = static::getMachineName($field_name);
+
     $new_config = [
       'weight' => isset($config['weight']) ? $config['weight'] : 0,
       'display_label' => isset($config['display_label']) ? $config['display_label'] : $field_name,
@@ -94,8 +111,7 @@ class FieldConfig implements FieldConfigInterface, RefinableCacheableDependencyI
     ];
 
     $this->config
-      ->set("configs.$config_name.fields.$machine_name", $new_config)
-      ->save();
+      ->set("configs.$config_name.fields.$machine_name", $new_config);
   }
 
   /**
@@ -105,6 +121,17 @@ class FieldConfig implements FieldConfigInterface, RefinableCacheableDependencyI
     foreach ($fields as $field) {
       $machine_name = static::getMachineName($field);
       $this->config->clear("configs.$config_name.fields.$machine_name");
+    }
+    $this->config->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function replaceFields(array $fields, $config_name) {
+    $this->config->clear("configs.$config_name.fields");
+    foreach ($fields as $field => $config) {
+      $this->internalSetField($field, $config, $config_name);
     }
     $this->config->save();
   }
