@@ -113,22 +113,48 @@ function _islandora_solr_metadata_update_8000(Connection $db, Schema $schema) {
         $new_assoc['cmodel_associations'][] = $old_assoc['cmodel'];
       }
     }
-    $new_assoc['description']['description_field'] = $association['description_field'];
-    $new_assoc['description']['description_label'] = $association['description_label'];
-    $truncation_info = unserialize($association['description_data']);
-    $new_assoc['description']['truncation'] = $truncation_info['truncation'];
-    $config->set($association['configuration_name'], $new_assoc);
+
+    $new_assoc['description'] = [
+      'description_field' => $association['description_field'],
+      'description_label' => $association['description_label'],
+      'truncation' => unserialize($association['description_data'])['truncation'],
+    ];
+
+    assert(0 === \Drupal::service('config.typed')
+      ->createFromNameAndData('islandora_solr_metadata.truncation_options', $new_assoc['description']['truncation'])
+      ->validate()
+      ->count(), "$configuration_name description truncation config is valid.");
+
+    $config->set("configs.$configuration_name", $new_assoc);
     // Add the fields.
-    foreach ($fields as &$field) {
+    foreach ($fields as $field) {
       $field += unserialize($field['data']);
-      $new_field = $field_config::getEmptyField();
-      $new_field['weight'] = $field['weight'];
-      $new_field['display_label'] = isset($field['display_label']) ? $field['display_label'] : $field['solr_field'];
-      $new_field['hyperlink'] = isset($field['hyperlink']) ? (bool) $field['hyperlink'] : FALSE;
-      $new_field['uri_replacement'] = isset($field['uri_replacement']) ? $field['uri_replacement'] : NULL;
-      $new_field['truncation'] = $field['truncation'];
-      $new_field['enable_permissions'] = $field['permissions']['enable_permissions'];
-      $new_field['permissions'] = $field['permissions']['permissions'];
+
+      $new_field = array_intersect_key($field, $field_config::getEmptyField());
+
+      assert(0 === \Drupal::service('config.typed')
+        ->createFromNameAndData('islandora_solr_metadata.truncation_options', $field['truncation'])
+        ->validate()
+        ->count(), "$configuration_name/{$field['solr_field']} truncation config is valid.");
+
+      // XXX: Given how role identification has changed between D7 and D8, where
+      // D7 used numeric IDs while D8 uses machine names, and it is unknown at
+      // time of writing how to discover/hook into the mapping, let's just drop
+      // the permission configuration.
+      if ($field['permissions']['enable_permissions']) {
+        \Drupal::logger('islandora_solr_metadata-7to8')->warning(t('@name/@field had permissions associated which we have not migrated.', [
+          '@name' => $configuration_name,
+          '@field' => $field['solr_field'],
+        ]));
+      }
+      $new_field['enable_permissions'] = FALSE;
+      $new_field['permissions'] = NULL;
+
+      assert(0 === \Drupal::service('config.typed')
+        ->createFromNameAndData('islandora_solr_metadata.field', $new_field)
+        ->validate()
+        ->count(), "$configuration_name/{$field['solr_field']} field is valid.");
+
       $config->setField($configuration_name, $field['solr_field'], $new_field);
     }
     $completed++;
