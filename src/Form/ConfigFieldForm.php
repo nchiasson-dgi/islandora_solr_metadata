@@ -3,7 +3,7 @@
 namespace Drupal\islandora_solr_metadata\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
+use Drupal\islandora_solr_metadata\Config\FieldConfigInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\NestedArray;
@@ -11,12 +11,12 @@ use Drupal\Component\Utility\NestedArray;
 /**
  * Form to configure fields in the solr metadata display.
  */
-class IslandoraSolrMetadataConfigFieldForm extends FormBase {
+class ConfigFieldForm extends FormBase {
 
   /**
    * Field configuration object.
    *
-   * @var \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig
+   * @var \Drupal\islandora_solr_metadata\Config\FieldConfigInterface
    */
   protected $fieldConfig;
 
@@ -39,10 +39,10 @@ class IslandoraSolrMetadataConfigFieldForm extends FormBase {
   /**
    * Constructor.
    *
-   * @param \Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig $field_config
+   * @param \Drupal\islandora_solr_metadata\Config\FieldConfigInterface $field_config
    *   The field configuration object to use.
    */
-  public function __construct(IslandoraSolrMetadataFieldConfig $field_config) {
+  public function __construct(FieldConfigInterface $field_config) {
     $this->fieldConfig = $field_config;
   }
 

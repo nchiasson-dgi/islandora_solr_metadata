@@ -5,7 +5,8 @@
  * Implementations of installation hooks.
  */
 
-use Drupal\islandora_solr_metadata\Config\IslandoraSolrMetadataFieldConfig;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Schema;
 
 /**
  * Implements hook_schema().
@@ -35,14 +36,34 @@ function islandora_solr_metadata_schema() {
 /**
  * Migrate old Drupal database fields into the new configuration.
  */
-function islandora_solr_metadata_update_8000() {
+function islandora_solr_metadata_update_8001() {
   $db = \Drupal::database();
+  $tx = $db->startTransaction();
   $schema = $db->schema();
 
   if (!$schema->tableExists('islandora_solr_metadata_fields') || !$schema->tableExists('islandora_solr_metadata_associations')) {
     return t('No islandora_solr_metadata_fields table and/or islandora_solr_metadata_associations table found in the database; nothing to import');
   }
 
+  try {
+    $completed = _islandora_solr_metadata_update_8001($db, $schema);
+    return t("Migrated @count Solr metadata configurations", ['@count' => $completed]);
+  }
+  catch (Exception $e) {
+    $tx->rollback();
+    throw $e;
+  }
+}
+
+/**
+ * Helper; bulk of the logic for islandora_solr_metadata_update_8001().
+ *
+ * @param \Drupal\Core\Database\Connection $db
+ *   An established DB connection.
+ * @param \Drupal\Core\Database\Schema $schema
+ *   The DB schema.
+ */
+function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
   // This table is going to be rebuilt as we create the new configs, so just get
   // the data, dump it, and then reconfigure it.
   $old_cmodel_assoc = $db->select('islandora_solr_metadata_cmodels', 'ismc')
@@ -73,44 +94,92 @@ function islandora_solr_metadata_update_8000() {
   $associations = $db->select('islandora_solr_metadata_associations', 'isma')
     ->fields('isma', [])
     ->execute()
-    ->fetchAllAssoc('configuration_name');
+    ->fetchAllAssoc('configuration_name', PDO::FETCH_ASSOC);
   $config = \Drupal::configFactory()->getEditable('islandora_solr_metadata.configs');
+
+  // Only grabbing the class, since we only use static methods here.
+  $field_config = \Drupal::service('islandora_solr_metadata.field_config');
+  $empty_field = get_class($field_config)::getEmptyField();
+
+  $apply_truncation_casts = function ($truncation) {
+    $casts = [
+      'max_length' => 'int',
+      'word_safe' => 'bool',
+      'ellipsis' => 'bool',
+      'min_wordsafe_length' => 'int',
+    ];
+
+    foreach ($casts as $offset => $actual_type) {
+      settype($truncation[$offset], $actual_type);
+    }
+
+    return $truncation;
+  };
+
   $completed = 0;
   foreach ($associations as $configuration_name => $association) {
     $fields = $db->select('islandora_solr_metadata_fields', 'ismf')
       ->fields('ismf', [])
-      ->condition('configuration_id', $association->configuration_id)
+      ->condition('configuration_id', $association['configuration_id'])
       ->execute()
       ->fetchAll(PDO::FETCH_ASSOC);
     // Add the association proper.
-    $new_assoc = IslandoraSolrMetadataConfig::getEmptyConfig();
+    $new_assoc = $field_config::getEmptyConfig();
     foreach ($old_cmodel_assoc as $old_assoc) {
       if ($old_assoc['configuration_id'] == $association['configuration_id']) {
         $new_assoc['cmodel_associations'][] = $old_assoc['cmodel'];
       }
     }
-    $new_assoc['description']['description_field'] = $association['description_field'];
-    $new_assoc['description']['description_label'] = $association['description_label'];
-    $truncation_info = unserialize($association['description_data']);
-    $new_assoc['description']['truncation'] = $truncation_info['truncation'];
-    $config->set($association['configuration_name'], $new_assoc);
+
+    $new_assoc['description'] = [
+      'description_field' => $association['description_field'],
+      'description_label' => $association['description_label'],
+      'truncation' => $apply_truncation_casts(unserialize($association['description_data'])['truncation']),
+    ];
+
+    assert(0 === \Drupal::service('config.typed')
+      ->createFromNameAndData('islandora_solr_metadata.truncation_options', $new_assoc['description']['truncation'])
+      ->validate()
+      ->count(), "$configuration_name description truncation config is valid.");
+
+    $config->set("configs.$configuration_name", $new_assoc);
     // Add the fields.
-    foreach ($fields as &$field) {
+    foreach ($fields as $field) {
       $field += unserialize($field['data']);
-      $new_field = IslandoraSolrMetadataFieldConfig::getEmptyField();
-      $new_field['weight'] = $field['weight'];
-      $new_field['display_label'] = isset($field['display_label']) ? $field['display_label'] : $field['solr_field'];
-      $new_field['hyperlink'] = isset($field['hyperlink']) ? (bool) $field['hyperlink'] : FALSE;
-      $new_field['uri_replacement'] = isset($field['uri_replacement']) ? $field['uri_replacement'] : NULL;
-      $new_field['truncation'] = $field['truncation'];
-      $new_field['enable_permissions'] = $field['permissions']['enable_permissions'];
-      $new_field['permissions'] = $field['permissions']['permissions'];
-      $config->setField($configuration_name, $field['solr_field'], $new_field);
+
+      $new_field = array_intersect_key($field, $empty_field) + $empty_field;
+
+      $new_field['truncation'] = $apply_truncation_casts($new_field['truncation']);
+
+      assert(0 === \Drupal::service('config.typed')
+        ->createFromNameAndData('islandora_solr_metadata.truncation_options', $field['truncation'])
+        ->validate()
+        ->count(), "$configuration_name/{$field['solr_field']} truncation config is valid.");
+
+      // XXX: Given how role identification has changed between D7 and D8, where
+      // D7 used numeric IDs while D8 uses machine names, and it is unknown at
+      // time of writing how to discover/hook into the mapping, let's just drop
+      // the permission configuration.
+      if ($field['permissions']['enable_permissions']) {
+        \Drupal::logger('islandora_solr_metadata-7to8')->warning(t('@name/@field had permissions associated which we have not migrated.', [
+          '@name' => $configuration_name,
+          '@field' => $field['solr_field'],
+        ]));
+      }
+      $new_field['enable_permissions'] = FALSE;
+      $new_field['permissions'] = NULL;
+
+      assert(0 === \Drupal::service('config.typed')
+        ->createFromNameAndData('islandora_solr_metadata.field', $new_field)
+        ->validate()
+        ->count(), "$configuration_name/{$field['solr_field']} field is valid.");
+
+      $field_config->setField($field['solr_field'], $new_field, $configuration_name);
     }
     $completed++;
   }
   $config->save(TRUE);
   $schema->dropTable('islandora_solr_metadata_fields');
   $schema->dropTable('islandora_solr_metadata_associations');
-  return t("Migrated @count Solr metadata configurations", ['@count' => $completed]);
+  return $completed;
 }

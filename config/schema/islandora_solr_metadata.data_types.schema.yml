@@ -39,7 +39,7 @@ islandora_solr_metadata.field:
       type: string
       nullable: true
     date_format:
-      type: string
+      type: date_format
       nullable: true
     truncation:
       type: islandora_solr_metadata.truncation_options
@@ -49,7 +49,7 @@ islandora_solr_metadata.field:
       type: sequence
       nullable: true
       sequence:
-        type: integer
+        type: string
         nullable: true
 islandora_solr_metadata.truncation_options:
   type: mapping
