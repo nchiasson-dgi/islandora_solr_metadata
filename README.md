@@ -81,6 +81,12 @@ Current maintainers:
 
 ## Development
 
+As display configurations have been moved out of the database and into Drupal 8
+configuration, most of the functionality in `includes/db.inc` is now redundant,
+and equivalent functionality is provided using the
+`islandora_solr_metadata.field_config` service, which should be preferred when
+working directly with fields.
+
 If you would like to contribute to this module, please check out the helpful
 [Documentation](https://github.com/Islandora/islandora/wiki#wiki-documentation-for-developers),
 [Developers](http://islandora.ca/developers) section on Islandora.ca and create

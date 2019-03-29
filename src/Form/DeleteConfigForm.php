@@ -9,14 +9,14 @@ use Drupal\Core\Url;
 /**
  * Confirmation form for when user decides to delete a configuration.
  */
-class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
+class DeleteConfigForm extends ConfirmFormBase {
 
   /**
-   * The ID of the item to delete.
+   * The name of the item to delete.
    *
    * @var string
    */
-  protected $configurationId;
+  protected $configurationName;
 
   /**
    * {@inheritdoc}
@@ -30,9 +30,8 @@ class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
    */
   public function getQuestion() {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-    $configuration_name = islandora_solr_metadata_retrieve_configuration_name($this->configurationId);
     return t('Are you sure you want to delete the @configuration_name display configuration?', [
-      '@configuration_name' => $configuration_name,
+      '@configuration_name' => $this->configurationName,
     ]);
   }
 
@@ -40,7 +39,7 @@ class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('islandora_solr_metadata.config', ['configuration_id' => $this->configurationId]);
+    return new Url('islandora_solr_metadata.config', ['configuration_name' => $this->configurationName]);
   }
 
   /**
@@ -67,8 +66,8 @@ class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $configuration_id = NULL) {
-    $this->configurationId = $configuration_id;
+  public function buildForm(array $form, FormStateInterface $form_state, $configuration_name = NULL) {
+    $this->configurationName = $configuration_name;
     return parent::buildForm($form, $form_state);
   }
 
@@ -77,10 +76,10 @@ class IslandoraSolrMetadataDeleteConfigForm extends ConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-    islandora_solr_metadata_delete_configuration($this->configurationId);
+    islandora_solr_metadata_delete_configuration($this->configurationName);
     $form_state->setRedirect('islandora_solr_metadata.metadata_display');
     drupal_set_message(t('The @configuration_name display configuration has been deleted!', [
-      '@configuration_name' => $this->configurationId,
+      '@configuration_name' => $this->configurationName,
     ]));
   }
 

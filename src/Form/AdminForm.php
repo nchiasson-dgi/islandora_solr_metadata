@@ -2,14 +2,42 @@
 
 namespace Drupal\islandora_solr_metadata\Form;
 
+use Drupal\islandora_solr_metadata\Config\FieldConfigInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Admin form for solr metadata.
  */
-class IslandoraSolrMetadataAdminForm extends FormBase {
+class AdminForm extends ConfigFormBase {
+
+  /**
+   * Solr metadata field configuration object.
+   *
+   * @var \Drupal\islandora_solr_metadata\Config\FieldConfigInterface
+   */
+  protected $fieldConfig;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('islandora_solr_metadata.field_config')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(ConfigFactoryInterface $config, FieldConfigInterface $field_config) {
+    $this->config = $config;
+    $this->fieldConfig = $field_config;
+  }
 
   /**
    * {@inheritdoc}
@@ -21,15 +49,23 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function getEditableConfigNames() {
+    return [
+      'islandora_solr_metadata.configs',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    $associations = islandora_solr_metadata_get_associations();
+    $associations = array_keys($this->config('islandora_solr_metadata.configs')->get('configs'));
     $form = [];
     $rows = [];
     foreach ($associations as $association) {
-      $cmodels = islandora_solr_metadata_get_cmodels($association['id']);
-      $associated_cmodels = [];
-      if (empty($cmodels)) {
+      $associated_cmodels = $this->config('islandora_solr_metadata.configs')->get("configs.$association.cmodel_associations");
+      if (empty($associated_cmodels)) {
         $associated_cmodels = [
           '#type' => 'item',
           '#markup' => $this->t('No content models currently associated'),
@@ -38,20 +74,16 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
       else {
         $associated_cmodels = [
           '#theme' => 'item_list',
-          '#items' => array_keys($cmodels),
+          '#items' => $associated_cmodels,
         ];
       }
       $rows[] = [
         'name' => [
           '#type' => 'link',
-          '#title' => $association['name'],
-          '#url' => Url::fromRoute('islandora_solr_metadata.config', ['configuration_id' => $association['id']]),
+          '#title' => $association,
+          '#url' => Url::fromRoute('islandora_solr_metadata.config', ['configuration_name' => $association]),
         ],
         'associated_cmodels' => $associated_cmodels,
-        'machine_name' => [
-          '#type' => 'item',
-          '#markup' => $association['machine_name'],
-        ],
       ];
     }
     $form['table'] = [
@@ -75,12 +107,6 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
       '#size' => 100,
       '#title' => $this->t('Configuration name'),
     ];
-    $form['add_configuration']['machine_name'] = [
-      '#type' => 'textfield',
-      '#size' => 100,
-      '#title' => $this->t('Machine name'),
-      '#description' => $this->t('A unique machine name used in the exportation of features'),
-    ];
     $form['add_configuration']['save_content_model'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add configuration'),
@@ -96,16 +122,6 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
     if (empty($form_state->getValue('configuration_name'))) {
       $form_state->setErrorByName('configuration_name', $this->t('Please enter a non-empty configuration name!'));
     }
-    if (empty($form_state->getValue('machine_name'))) {
-      $form_state->setErrorByName('machine_name', $this->t('Please enter a non-empty machine name!'));
-    }
-    else {
-      module_load_include('inc', 'islandora_solr_metadata', 'db');
-      $config_exists = islandora_solr_metadata_retrieve_configuration_from_machine_name($form_state->getValue('machine_name'));
-      if ($config_exists !== FALSE) {
-        $form_state->setErrorByName('machine_name', $this->t('The machine name of @machine already exists in the database!', ['@machine' => $form_state->getValue('machine_name')]));
-      }
-    }
   }
 
   /**
@@ -113,8 +129,11 @@ class IslandoraSolrMetadataAdminForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    islandora_solr_metadata_add_configuration($form_state->getValue('configuration_name'), $form_state->getValue('machine_name'));
-    drupal_set_message($this->t('A new empty configuration has been created for @config_name', ['@config_name' => $form_state->getValue('configuration_name')]));
+    $config_name = $form_state->getValue('configuration_name');
+    $this->config('islandora_solr_metadata.configs')
+      ->set("configs.$config_name", $this->fieldConfig->getEmptyConfig())
+      ->save();
+    drupal_set_message($this->t('A new empty configuration has been created for @config_name', ['@config_name' => $config_name]));
   }
 
 }

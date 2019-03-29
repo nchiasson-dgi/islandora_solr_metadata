@@ -6,29 +6,6 @@
  */
 
 /**
- * Get all configurations available.
- *
- * @return array
- *   An array of associative arrays, each of which contains:
- *   - name: The name of the given configuration
- *   - id: The ID of the given configuration.
- */
-function islandora_solr_metadata_get_associations() {
-  $associations = [];
-  $result = db_query('SELECT configuration_id, configuration_name, machine_name FROM {islandora_solr_metadata_associations}');
-  foreach ($result as $record) {
-    $config_name = $record->configuration_name;
-
-    $associations[] = [
-      'name' => $config_name,
-      'id' => $record->configuration_id,
-      'machine_name' => $record->machine_name,
-    ];
-  }
-  return $associations;
-}
-
-/**
  * Get all display configurations based upon an object's content models.
  *
  * @param array $cmodels
@@ -44,337 +21,169 @@ function islandora_solr_metadata_get_associations_by_cmodels(array $cmodels) {
     unset($cmodels[$to_ignore]);
   }
   $results = db_select('islandora_solr_metadata_cmodels', 'i')
-    ->fields('i', ['configuration_id'])
+    ->fields('i', ['configuration_name'])
     ->condition('cmodel', $cmodels)
     ->execute()
-    ->fetchAllAssoc('configuration_id', PDO::FETCH_ASSOC);
+    ->fetchAllAssoc('configuration_name', PDO::FETCH_ASSOC);
   return $results;
 }
 
 /**
  * Get models associated with the given configuration.
  *
- * @param int $configuration_id
- *   The ID of the configuration for which to grab the content models.
+ * @param string $configuration_name
+ *   The name of the configuration for which to grab the content models.
  *
  * @return array
- *   An associative array mapping content model PIDs to an associative array
- *   containing:
- *   - cmodel: The PID.
+ *   An array of content model PIDs, mapped to keys so they can be used for
+ *   select elements.
  */
-function islandora_solr_metadata_get_cmodels($configuration_id) {
-  $result = db_query('SELECT cmodel FROM {islandora_solr_metadata_cmodels} WHERE configuration_id = :configuration_id', [':configuration_id' => $configuration_id]);
-  return $result->fetchAllAssoc('cmodel', PDO::FETCH_ASSOC);
-}
-
-/**
- * Create a new configuration.
- *
- * @param string $configuration_name
- *   The name of a configuration to add the the DB.
- * @param string $machine_name
- *   The unique machine name to add the the DB.
- *
- * @return int
- *   The ID with which the configuration was created in the database.
- */
-function islandora_solr_metadata_add_configuration($configuration_name, $machine_name) {
-  $id = db_insert('islandora_solr_metadata_associations')
-    ->fields(
-      [
-        'configuration_name' => $configuration_name,
-        'machine_name' => $machine_name,
-      ]
-    )
-    ->execute();
-  return $id;
+function islandora_solr_metadata_get_cmodels($configuration_name) {
+  $associations = \Drupal::config('islandora_solr_metadata.configs')
+    ->get("configs.$configuration_name.cmodel_associations");
+  return array_combine($associations, $associations);
 }
 
 /**
  * Get all fields in the given display.
  *
- * @param int $configuration_id
- *   The ID for the configuration for which to get the list of fields.
+ * XXX: This isn't strictly necessary anymore, but is being maintained because
+ * it appears to be in place in custom modules. Could consider deprecating.
+ *
+ * @param string $configuration_name
+ *   The name of the configuration for which to get the list of fields.
  *
  * @return array
  *   An associative array of associative arrays, representing Solr fields
  *   mapped to the details about the given field, including:
- *   - configuration_id
  *   - display_label
  *   - weight
  *   - solr_field.
+ *
+ * @see \Drupal\islandora_solr_metadata\Config\FieldConfigInterface::getFields()
  */
-function islandora_solr_metadata_get_fields($configuration_id) {
-  $result = db_query('SELECT * FROM {islandora_solr_metadata_fields} WHERE configuration_id = :configuration_id ORDER BY weight', [':configuration_id' => $configuration_id]);
-
-  $fields = $result->fetchAllAssoc('solr_field', PDO::FETCH_ASSOC);
-  $deserialize_data = function ($field) {
-    // Merge unserialized blob into field array.
-    $field += unserialize($field['data']);
-
-    // Add in defaults.
-    $field += [
-      'display_label' => $field['solr_field'],
-      'hyperlink' => 0,
-    ];
-    return $field;
-  };
-  $fields = array_map($deserialize_data, $fields);
-  return $fields;
-}
-
-/**
- * Get the name for the given configuration.
- *
- * @param int $configuration_id
- *   The ID for a configuration for which to grab the name.
- *
- * @return string
- *   The name of the configuration.
- */
-function islandora_solr_metadata_retrieve_configuration_name($configuration_id) {
-  $result = db_query('SELECT configuration_name from {islandora_solr_metadata_associations} WHERE configuration_id = :configuration_id', [':configuration_id' => $configuration_id]);
-  $config_name = $result->fetchColumn();
-
-  return $config_name;
-}
-
-/**
- * Get the ID for the given configuration.
- *
- * @param string $machine_name
- *   The machine name of the configuration ID we are grabbing.
- *
- * @return bool|int
- *   The configuration ID if it exists; otherwise, FALSE.
- */
-function islandora_solr_metadata_retrieve_configuration_from_machine_name($machine_name) {
-  $result = db_query('SELECT configuration_id from {islandora_solr_metadata_associations} WHERE machine_name = :machine_name', [':machine_name' => $machine_name]);
-  $config_id = $result->fetchColumn();
-  return $config_id;
+function islandora_solr_metadata_get_fields($configuration_name) {
+  return \Drupal::service('islandora_solr_metadata.field_config')
+    ->getFields($configuration_name);
 }
 
 /**
  * Delete the given configuration indicated by the given ID.
  *
- * @param int $configuration_id
- *   The ID for a configuration to remove.
+ * @param string $configuration_name
+ *   The name of the configuration to remove.
  */
-function islandora_solr_metadata_delete_configuration($configuration_id) {
-  db_delete('islandora_solr_metadata_fields')
-    ->condition('configuration_id', $configuration_id)
-    ->execute();
-
-  db_delete('islandora_solr_metadata_cmodels')
-    ->condition('configuration_id', $configuration_id)
-    ->execute();
-
-  db_delete('islandora_solr_metadata_associations')
-    ->condition('configuration_id', $configuration_id)
-    ->execute();
+function islandora_solr_metadata_delete_configuration($configuration_name) {
+  \Drupal::service('config.factory')
+    ->getEditable('islandora_solr_metadata.configs')
+    ->clear("configs.$configuration_name")
+    ->save();
 }
 
 /**
- * Check that a configuration exists with the given ID.
+ * Check that a configuration exists with the given name.
  *
- * @param int $configuration_id
- *   An ID to test.
+ * @param string $configuration_name
+ *   A name to test.
  *
  * @return bool
- *   Whether or not the ID exists.
+ *   Whether or not the configuration exists.
  */
-function islandora_solr_metadata_configuration_exists($configuration_id) {
-  $result = db_query('SELECT COUNT(*) FROM {islandora_solr_metadata_associations} WHERE configuration_id = :configuration_id', [':configuration_id' => $configuration_id]);
-  return intval($result->fetchField()) > 0;
-}
-
-/**
- * Add content models to a specified configuration ID.
- *
- * @param int $configuration_id
- *   The configuration ID of the configuration which to add to.
- * @param array $content_models
- *   An associative array mapping content model PIDs to an associative array
- *   containing:
- *   - cmodel: The PID.
- */
-function islandora_solr_metadata_add_content_models($configuration_id, array $content_models) {
-  $query = db_insert('islandora_solr_metadata_cmodels')
-    ->fields(['configuration_id', 'cmodel']);
-  foreach ($content_models as $content_model) {
-    $query->values([
-      'configuration_id' => $configuration_id,
-      'cmodel' => $content_model['cmodel'],
-    ]);
-  }
-  $query->execute();
-}
-
-/**
- * Delete content models from a specified configuration ID.
- *
- * @param int $configuration_id
- *   The configuration ID of the configuration which to add to.
- * @param array $content_models
- *   An associative array mapping content model PIDs to an associative array
- *   containing:
- *   - cmodel: The PID.
- */
-function islandora_solr_metadata_delete_content_models($configuration_id, array $content_models) {
-  db_delete('islandora_solr_metadata_cmodels')
-    ->condition('cmodel', array_keys($content_models))
-    ->condition('configuration_id', $configuration_id)
-    ->execute();
+function islandora_solr_metadata_configuration_exists($configuration_name) {
+  return !is_null(\Drupal::config('islandora_solr_metadata.configs')->get("configs.$configuration_name"));
 }
 
 /**
  * Add fields to a specified configuration ID.
  *
- * @param int $configuration_id
- *   The configuration ID of the configuration which to add to.
+ * TODO: Do we even need this anymore?
+ *
+ * @param string $configuration_name
+ *   The name of the configuration which to add to.
  * @param array $fields
- *   An associative array of associative arrays, containing details about the
- *   given field being added, including:
- *   - configuration_id
- *   - display_label
- *   - weight
- *   - solr_field.
+ *   An associative array pairing Solr fields with field config info.
  */
-function islandora_solr_metadata_add_fields($configuration_id, array $fields) {
-  $query = db_insert('islandora_solr_metadata_fields')
-    ->fields([
-      'configuration_id',
-      'solr_field',
-      'weight',
-      'data',
-    ]);
-
-  foreach ($fields as $field) {
-    $query->values([
-      'configuration_id' => $configuration_id,
-      'solr_field' => $field['solr_field'],
-      'weight' => $field['weight'],
-      'data' => serialize(array_diff_key($field, islandora_solr_metadata_fields_non_data_fields())),
-    ]);
-  }
-  $query->execute();
+function islandora_solr_metadata_add_fields($configuration_name, array $fields) {
+  islandora_solr_metadata_update_fields($configuration_name, $fields);
 }
 
 /**
  * Delete fields from a configuration given configuration ID.
  *
- * @param int $configuration_id
- *   The configuration ID of the configuration which to add to.
+ * @param string $configuration_name
+ *   The name of the configuration which to add to.
  * @param array $fields
- *   An associative array of associative arrays, representing Solr fields
- *   mapped to the details about the given field, including:
- *   - configuration_id
- *   - display_label
- *   - weight
- *   - solr_field.
+ *   An array of fields to remove.
  */
-function islandora_solr_metadata_delete_fields($configuration_id, array $fields) {
-  db_delete('islandora_solr_metadata_fields')
-    ->condition('solr_field', array_keys($fields))
-    ->condition('configuration_id', $configuration_id)
-    ->execute();
+function islandora_solr_metadata_delete_fields($configuration_name, array $fields) {
+  \Drupal::service('islandora_solr_metadata.field_config')
+    ->deleteFields($fields, $configuration_name);
 }
 
 /**
- * Updates existing fields in a configuration given configuration ID.
+ * Adds or updates fields in a configuration given configuration ID.
  *
- * @param int $configuration_id
- *   The configuration ID of the configuration which to add to.
+ * @param string $configuration_name
+ *   The name of the configuration which to add to.
  * @param array $fields
  *   An associative array of associative arrays, representing Solr fields
  *   mapped to the details about the given field, including:
- *   - configuration_id
  *   - display_label
  *   - weight
  *   - solr_field.
+ *
+ * @see \Drupal\islandora_solr_metadata\Config\FieldConfigInterface::setFields()
  */
-function islandora_solr_metadata_update_fields($configuration_id, array $fields) {
-  $not_data = islandora_solr_metadata_fields_non_data_fields();
-  foreach ($fields as $field) {
-    db_update('islandora_solr_metadata_fields')
-      ->fields([
-        'weight' => $field['weight'],
-        'data' => serialize(array_diff_key($field, $not_data)),
-      ])
-      ->condition('solr_field', $field['solr_field'])
-      ->condition('configuration_id', $configuration_id)
-      ->execute();
-  }
+function islandora_solr_metadata_update_fields($configuration_name, array $fields) {
+  \Drupal::service('islandora_solr_metadata.field_config')
+    ->setFields($fields, $configuration_name);
 }
 
 /**
- * Updates existing fields in a configuration given configuration ID.
+ * Retrieves description information about a configuration.
  *
- * @param int $configuration_id
- *   The configuration ID of the configuration which to add to.
- * @param bool $translate
- *   Whether the output needs to be translated.
+ * @param string $configuration_name
+ *   The name of the configuration to retrieve the description for.
  *
  * @return array
  *   An associative array containing:
  *   -description_field: The Solr field used to generate the description.
  *   -description_label: The display label associated with the description.
  *   -description_data: An array of extra data for custom solr metadata display.
- *     -default_values: An array of saved field values for default display.
+ *     -truncation: An array of saved field values for default display.
  *       -truncation_type: As excepted by truncate_utf8().
  *       -max_length: As excepted by truncate_utf8().
  *       -word_safe: As excepted by truncate_utf8().
  *       -ellipsis: As excepted by truncate_utf8().
  *       -min_wordsafe_length: As excepted by truncate_utf8().
- *     -min_wordsafe_length_input_path: The ajax input name path for wordsafe
- *     length.
  */
-function islandora_solr_metadata_retrieve_description($configuration_id, $translate = TRUE) {
-  $result = db_query('SELECT description_field, description_label, description_data FROM {islandora_solr_metadata_associations} WHERE configuration_id = :configuration_id', [':configuration_id' => $configuration_id]);
-  $description = $result->fetchAssoc();
-
-  if (!empty($description['description_data'])) {
-    $description['description_data'] = unserialize($description['description_data']);
-  }
-
-  return $description;
+function islandora_solr_metadata_retrieve_description($configuration_name) {
+  return \Drupal::config('islandora_solr_metadata.configs')
+    ->get("configs.$configuration_name.description");
 }
 
 /**
  * Updates the description field and label in the database.
  *
- * @param int $configuration_id
+ * @param string $configuration_name
  *   The configuration ID of the configuration which to update.
  * @param string $description_field
  *   The Solr field which we are grabbing the description value from.
  * @param string $description_label
  *   The label for the description metadata.
- * @param array $description_data
- *   An array of extra data to be stored for custom solr metadata display.
+ * @param array $truncation_data
+ *   An array of formatted truncation data.
  */
-function islandora_solr_metadata_update_description($configuration_id, $description_field, $description_label, array $description_data = []) {
+function islandora_solr_metadata_update_description($configuration_name, $description_field, $description_label, array $truncation_data) {
   if (empty($description_field)) {
     $description_field = NULL;
     $description_label = NULL;
-    $description_data = NULL;
+    $truncation_data = [];
   }
-  db_update('islandora_solr_metadata_associations')
-    ->fields([
-      'description_field' => $description_field,
-      'description_label' => $description_label,
-      'description_data' => serialize($description_data),
-    ])
-    ->condition('configuration_id', $configuration_id)
-    ->execute();
-}
-
-/**
- * Helper to list the actual columns of "islandora_solr_metadata_fields".
- *
- * That is to say, the values which are their own columns in the
- * "islandora_solr_metadata_fields",
- */
-function islandora_solr_metadata_fields_non_data_fields() {
-  $schema = drupal_get_module_schema('islandora_solr_metadata', 'islandora_solr_metadata_fields');
-  return $schema['fields'];
+  \Drupal::service('config.factory')
+    ->getEditable('islandora_solr_metadata.configs')
+    ->set("configs.$configuration_name.description.description_field", $description_field)
+    ->set("configs.$configuration_name.description.description_label", $description_label)
+    ->set("configs.$configuration_name.description.truncation", $truncation_data)
+    ->save();
 }

@@ -1,0 +1,9 @@
+services:
+  islandora_solr_metadata.field_config:
+    class: Drupal\islandora_solr_metadata\Config\FieldConfig
+    arguments: ['@config.factory']
+  islandora_solr_metadata.config_subscriber:
+    class: Drupal\islandora_solr_metadata\Config\ConfigSubscriber
+    arguments: ['@database']
+    tags:
+      - {name: event_subscriber}

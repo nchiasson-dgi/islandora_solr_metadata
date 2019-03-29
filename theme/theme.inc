@@ -9,6 +9,9 @@ use Drupal\islandora_solr\IslandoraSolrQueryProcessor;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Link;
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Cache\CacheableMetadata;
+
+use Drupal\islandora\Controller\DefaultController as IslandoraController;
 
 /**
  * Prepares variables for islandora_solr_metadata_display templates.
@@ -28,12 +31,20 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   $variables['#attached']['library'][] = 'islandora_solr/toggle';
 
   $object = $variables['islandora_object'];
+  $config = \Drupal::config('islandora_solr_metadata.settings');
   $db_fields = [];
   $solr_fields =& $variables['solr_fields'];
   $associations = $variables['associations'];
 
-  foreach ($associations as $configuration_id) {
-    $field = islandora_solr_metadata_get_fields($configuration_id['configuration_id']);
+  $cache_meta = (new CacheableMetadata())
+    ->addCacheableDependency($object)
+    ->addCacheableDependency($config)
+    // XXX: The passed "associations" are very likely based upon
+    // 'islandora_solr_metadata.configs'... let's add it here.
+    ->addCacheableDependency(\Drupal::config('islandora_solr_metadata.configs'));
+
+  foreach ($associations as $association) {
+    $field = islandora_solr_metadata_get_fields($association['configuration_name']);
     $db_fields = array_merge($db_fields, $field);
   }
   foreach ($db_fields as $solr_field => $value) {
@@ -45,7 +56,7 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
       'value' => [],
     ];
   }
-  $separator = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator');
+  $separator = $config->get('islandora_solr_metadata_field_value_separator');
 
   if (empty($separator)) {
     $separator = "\n";
@@ -53,17 +64,25 @@ function template_preprocess_islandora_solr_metadata_display(array &$variables) 
   $variables['separator'] = $separator;
   $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
 
-  $variables['islandora_solr_metadata_omit_empty_values'] = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values');
+  $variables['islandora_solr_metadata_omit_empty_values'] = $config->get('islandora_solr_metadata_omit_empty_values');
 
-  $variables['found'] = islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields']);
+  $variables['found'] = _islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields'], $cache_meta);
   $variables['not_found_message'] = t('Document not present in Solr while generating the metadata display for @id. Try @reloading the page, or contact an administrator if this issue persists.', [
     '@id' => $variables['islandora_object']->id,
     '@reloading' => '<a href="" onclick="window.location.reload(true)">' . t('reloading') . '</a>',
   ]);
 
   foreach ($variables['solr_fields'] as &$solr_field) {
-    $solr_field['value_filtered'] = !empty($solr_field['value']) ? check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html') : '';
+    $field_value = reset($solr_field['value']);
+    if ($solr_field['hyperlink']) {
+      $solr_field['value_filtered'] = $field_value->toRenderable();
+    }
+    else {
+      $solr_field['value_filtered'] = !empty($field_value) ? check_markup($field_value, 'islandora_solr_metadata_filtered_html') : '';
+    }
   }
+
+  $cache_meta->applyTo($variables);
 }
 
 /**
@@ -79,10 +98,17 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
   $associations = $variables['associations'];
   $variables['#attached']['library'][] = 'islandora_solr/toggle';
 
+  $settings = \Drupal::config('islandora_solr_metadata.settings');
+  $configs = \Drupal::config('islandora_solr_metadata.configs');
+  $cache_meta = (new CacheableMetadata())
+    ->addCacheableDependency($variables['islandora_object'])
+    ->addCacheableDependency($settings)
+    ->addCacheableDependency($configs);
+
   $descriptions = [];
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-  foreach ($associations as $configuration_id) {
-    $description = islandora_solr_metadata_retrieve_description($configuration_id['configuration_id']);
+  foreach ($associations as $association) {
+    $description = $configs->get("configs.{$association['configuration_name']}.description");
     if ($description['description_field'] !== NULL) {
       $descriptions[] = $description;
     }
@@ -92,22 +118,23 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
     $solr_fields[$desc_field] = [
       'display_label' => $description['description_label'],
       'value' => [],
-      'description_data' => $description['description_data'],
+      'description_data' => [$description['truncation']],
+      'enable_permissions' => FALSE,
     ];
   }
-  $separator = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator');
+  $separator = $settings->get('islandora_solr_metadata_field_value_separator');
 
   if (empty($separator)) {
     $separator = "\n";
   }
   $variables['separator'] = $separator;
 
-  $variables['found'] = islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields']);
+  $variables['found'] = _islandora_solr_metadata_query_fields($variables['islandora_object'], $variables['solr_fields'], $cache_meta);
 
   // XXX: Seems a little odd, yes... Was reusing the "description" value,
   // though.
   $variables['description'] = $variables['solr_fields'];
-  $separator = \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator');
+  $separator = $settings->get('islandora_solr_metadata_field_value_separator');
 
   if (empty($separator)) {
     $separator = "\n";
@@ -145,8 +172,20 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
     }
   }
   foreach ($variables['description'] as &$solr_field) {
-    $solr_field['value_filtered'] = check_markup($solr_field['value'][0], 'islandora_solr_metadata_filtered_html');
+    $field_value = reset($solr_field['value']);
+    $solr_field['value_filtered'] = check_markup($field_value, 'islandora_solr_metadata_filtered_html');
   }
+
+  $cache_meta->applyTo($variables);
+}
+
+/**
+ * Maintain API for _islandora_solr_metadata_query_fields().
+ *
+ * @see _islandora_solr_metadata_query_fields()
+ */
+function islandora_solr_metadata_query_fields(AbstractObject $object, array &$solr_fields) {
+  return _islandora_solr_metadata_query_fields($object, $solr_fields, new CacheableMetadata());
 }
 
 /**
@@ -163,20 +202,29 @@ function template_preprocess_islandora_solr_metadata_description(array &$variabl
  *   - weight: An optional weight we will use to sort the values.
  *   - formatter: An optional callable to which we will call with each value
  *     from the given field, to return alternate text or markup as desired.
+ * @param Drupal\Core\Cache\CacheableMetadata $cache_meta
+ *   A CacheableMetadata object to update as we process things.
  *
  * @return bool
  *   TRUE if we have found a document for the object in question; otherwise,
  *   FALSE.
  */
-function islandora_solr_metadata_query_fields(AbstractObject $object, array &$solr_fields) {
+function _islandora_solr_metadata_query_fields(AbstractObject $object, array &$solr_fields, CacheableMetadata $cache_meta) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   if (!empty($solr_fields)) {
     $user = \Drupal::currentUser();
+    $settings = \Drupal::config('islandora_solr_metadata.settings');
 
     $query_processor = new IslandoraSolrQueryProcessor();
     $query_processor->solrQuery = 'PID:"' . $object->id . '"';
     $query_processor->solrParams['fl'] = '*';
     $query_processor->executeQuery(FALSE);
+
+    $cache_meta
+      ->addCacheableDependency($query_processor)
+      // Account for our role-based permissions.
+      ->addCacheContexts(['user.roles']);
+
     if ($query_processor->islandoraSolrResult['response']['numFound'] > 0) {
       $solr_results_doc = $query_processor->islandoraSolrResult['response']['objects']['0']['solr_doc'];
 
@@ -188,7 +236,7 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
         // modified to get around a bug in PHP 5.3.3 when used on CentOS 6.6,
         // otherwise the calling function doesn't maintain a reference to the
         // original value and it becomes a copy.
-        $get_display_value = function ($original_value) use ($solr_field, &$solr_fields) {
+        $get_display_value = function ($original_value) use ($solr_field, &$solr_fields, $cache_meta, $settings) {
           $value = $original_value;
           $field_config = $solr_fields[$solr_field] + [
             'hyperlink' => 0,
@@ -206,6 +254,11 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
               $relation_qp->solrParams['fl'] = "PID,{$field_config['uri_replacement']}";
               $relation_qp->solrLimit = 1;
               $relation_qp->executeQuery(FALSE);
+
+              $cache_meta
+                ->addCacheableDependency($relation_qp)
+                ->addCacheTags([IslandoraController::LISTING_TAG]);
+
               if ($relation_qp->islandoraSolrResult['response']['numFound'] > 0) {
                 $relation_doc = $relation_qp->islandoraSolrResult['response']['objects'][0]['solr_doc'];
                 if (isset($relation_doc[$field_config['uri_replacement']])) {
@@ -238,20 +291,17 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
             $value = call_user_func($field_config['formatter'], $value);
           }
           if ($field_config['hyperlink'] == 1 && trim($value)) {
-            if (\Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values') && !trim($value)) {
+            if ($settings->get('islandora_solr_metadata_omit_empty_values') && !trim($value)) {
               // Avoid generating markup (throwing off the "empty" check).
               // Will get stripped out later.
               return FALSE;
             }
-            $solr_query = format_string('!field:!value', [
-              '!field' => $solr_field,
-              '!value' => islandora_solr_facet_escape($original_value),
-            ]);
-            return Link::createFromRoute($value, 'islandora_solr.islandora_solr', [
+            $escaped_value = islandora_solr_facet_escape($original_value);
+            return Link::createFromRoute($value, 'islandora_solr.islandora_solr', [], [
               "query" => [
                 "type" => "dismax",
                 "f" => [
-                  $solr_query,
+                  "$solr_field:$escaped_value",
                 ],
               ],
             ]);
@@ -267,7 +317,7 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
         $solr_fields[$solr_field]['value'] = array_map($get_display_value, $value);
       }
 
-      if (\Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_omit_empty_values')) {
+      if ($settings->get('islandora_solr_metadata_omit_empty_values')) {
         $filter_function = function ($field_info) {
           // Remove all empty field values to determine if field is empty.
           $filtered_values = array_filter($field_info['value']);
@@ -277,7 +327,7 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
         $solr_fields = $filtered;
       }
 
-      if (\Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_dedup_values')) {
+      if ($settings->get('islandora_solr_metadata_dedup_values')) {
         foreach ($solr_fields as &$field) {
           $field['value'] = array_unique($field['value']);
         }
@@ -289,20 +339,17 @@ function islandora_solr_metadata_query_fields(AbstractObject $object, array &$so
         // Check if the field is configured to filter based on whole field.
         if (($truncation = NestedArray::getValue($field, ['truncation'])) && $truncation['max_length'] > 0 && isset($truncation['truncation_type']) && $truncation['truncation_type'] == 'whole_field_option') {
           // Keep the updated value stored in an array.
-          $updated_value[] = islandora_solr_truncate_field_display($field['value'], $truncation['max_length'], $truncation['ellipsis'], $truncation['word_safe'], $truncation['min_wordsafe_length'], \Drupal::config('islandora_solr_metadata.settings')->get('islandora_solr_metadata_field_value_separator'));
+          $updated_value[] = islandora_solr_truncate_field_display($field['value'], $truncation['max_length'], $truncation['ellipsis'], $truncation['word_safe'], $truncation['min_wordsafe_length'], $settings->get('islandora_solr_metadata_field_value_separator'));
           // Replace value with updated field display.
           $field['value'] = $updated_value;
         }
 
-        // Apply rules configurations for this field as configured
-        // on the metadata configuration page. Unset the field from
-        // the $solr_fields array to prevent it from being shown.
-        $permission = NestedArray::getValue($field, ['permissions']);
-        if ($permission['enable_permissions'] && !array_intersect(array_keys($user->roles), $permission['permissions'])) {
-          // Permissions are being enforced and none of our roles are allowed...
-          unset($solr_fields[$field['solr_field']]);
-        }
       }
+
+      $permissions_filter = function ($field) use ($user) {
+        return !$field['enable_permissions'] || array_intersect($user->getRoles(), $field['permissions']);
+      };
+      $solr_fields = array_filter($solr_fields, $permissions_filter);
 
       uasort($solr_fields, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
       return TRUE;

@@ -8,7 +8,7 @@ use Drupal\Core\Form\ConfigFormBase;
 /**
  * General admin form for solr metadata.
  */
-class IslandoraSolrMetadataGeneralAdminForm extends ConfigFormBase {
+class GeneralAdminForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}

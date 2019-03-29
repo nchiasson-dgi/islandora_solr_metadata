@@ -21,57 +21,53 @@ class DefaultController extends ControllerBase {
   /**
    * Title callback for solr metadata display configuration page.
    *
-   * @param int $configuration_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $configuration_name
+   *   The name of the desired metadata display configuration.
    */
-  public function islandoraSolrMetadataDisplayConfigurationName($configuration_id) {
-    return islandora_solr_metadata_display_configuration_name($configuration_id);
+  public function islandoraSolrMetadataDisplayConfigurationName($configuration_name) {
+    return islandora_solr_metadata_display_configuration_name($configuration_name);
   }
 
   /**
    * Access callback for solr metadata.
    *
-   * @param int $configuration_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $configuration_name
+   *   The name of the desired metadata display configuration.
    */
-  public function islandoraSolrMetadataAccess($configuration_id) {
-    $perm = islandora_solr_metadata_access($configuration_id);
+  public function islandoraSolrMetadataAccess($configuration_name) {
+    $perm = islandora_solr_metadata_access($configuration_name);
     return AccessResult::allowedIf($perm)
       ->cachePerPermissions()
-      // XXX: Should be made dependent on the configuration object/entity
-      // storing the configuration, after it's implemented.
-      ->mergeCacheMaxAge(0);
+      ->addCacheableDependency($this->config('islandora_solr_metadata.configs'));
   }
 
   /**
    * Title callback for solr metadata display field configuration page.
    *
-   * @param int $config_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $config_name
+   *   The name of the desired metadata display configuration.
    * @param string $escaped_field_name
    *   The string containing the escaped field name.
    */
-  public function islandoraSolrMetadataDisplayFieldConfigurationName($config_id, $escaped_field_name) {
+  public function islandoraSolrMetadataDisplayFieldConfigurationName($config_name, $escaped_field_name) {
     module_load_include('module', 'islandora_solr_metadata');
-    return islandora_solr_metadata_display_field_configuration_name($config_id, $escaped_field_name);
+    return islandora_solr_metadata_display_field_configuration_name($config_name, $escaped_field_name);
   }
 
   /**
    * Access callback for solr metadata field configuration.
    *
-   * @param int $config_id
-   *   The integer ID for the desired metadata display configuration.
+   * @param string $config_name
+   *   The name of the desired metadata display configuration.
    * @param string $escaped_field_name
    *   The string containing the escaped field name.
    */
-  public function islandoraSolrMetadataFieldConfigurationAccess($config_id, $escaped_field_name) {
+  public function islandoraSolrMetadataFieldConfigurationAccess($config_name, $escaped_field_name) {
     module_load_include('module', 'islandora_solr_metadata');
-    $perm = islandora_solr_metadata_field_configuration_access($config_id, $escaped_field_name);
+    $perm = islandora_solr_metadata_field_configuration_access($config_name, $escaped_field_name);
     return AccessResult::allowedIf($perm)
       ->cachePerPermissions()
-      // XXX: Should be made dependent on the configuration object/entity
-      // storing the configuration, after it's implemented.
-      ->mergeCacheMaxAge(0);
+      ->addCacheableDependency($this->config('islandora_solr_metadata.configs'));
   }
 
 }
