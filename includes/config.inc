@@ -44,6 +44,8 @@ function islandora_solr_metadata_cmodels_ajax(array &$form, FormStateInterface &
  *
  * @param array $data
  *   An array of data representing rows to be rendered in the tableselect.
+ * @param string $configuration_name
+ *   The name of the configuration in which this field is defined.
  *
  * @return array
  *   An array representing the tableselect to be rendered.
@@ -79,7 +81,10 @@ function islandora_solr_metadata_management(array $data) {
           'edit' => [
             '#access' => isset($field['ajax-volatile']) ? !$field['ajax-volatile'] : TRUE,
             '#type' => 'link',
-            '#url' => Url::fromRoute('islandora_solr_metadata.config_field', ['config_name' => $field['configuration_name'], 'escaped_field_name' => islandora_solr_replace_slashes($field_name)]),
+            '#url' => Url::fromRoute('islandora_solr_metadata.config_field', [
+              'config_name' => $configuration_name,
+              'escaped_field_name' => islandora_solr_replace_slashes($field_name),
+            ]),
             '#title' => t('edit'),
           ],
         ],
