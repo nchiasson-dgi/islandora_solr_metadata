@@ -134,8 +134,9 @@ function islandora_solr_metadata_islandora_metadata_display_info() {
  * @param bool $print
  *   Whether this is for printing purposes.
  *
- * @return string
- *   Markup representing the metadata display pulled from Solr.
+ * @return array|bool
+ *   A render array representing the metadata display pulled from Solr;
+ *   otherwise, FALSE.
  */
 function islandora_solr_metadata_display_callback(AbstractObject $object, $print = FALSE) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
@@ -162,8 +163,9 @@ function islandora_solr_metadata_display_callback(AbstractObject $object, $print
  * @param AbstractObject $object
  *   An AbstractObject representing an object within Fedora.
  *
- * @return string
- *   Markup representing the metadata display pulled from Solr.
+ * @return array|bool
+ *   A render array representing the metadata display pulled from Solr;
+ *   otherwise, FALSE.
  */
 function islandora_solr_metadata_description_callback(AbstractObject $object) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
