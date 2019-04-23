@@ -50,7 +50,7 @@ function islandora_solr_metadata_cmodels_ajax(array &$form, FormStateInterface &
  * @return array
  *   An array representing the tableselect to be rendered.
  */
-function islandora_solr_metadata_management(array $data) {
+function islandora_solr_metadata_management(array $data, $configuration_name) {
   module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   $form = [];
