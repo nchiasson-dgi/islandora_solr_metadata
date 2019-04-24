@@ -77,14 +77,14 @@ class AdminForm extends ConfigFormBase {
         ];
       }
       $rows[] = [
-          [
-            '#type' => 'link',
-            '#title' => $association,
-            '#url' => Url::fromRoute('islandora_solr_metadata.config', [
-              'configuration_name' => $association,
-            ]),
-          ],
-          $associated_cmodels,
+        [
+          '#type' => 'link',
+          '#title' => $association,
+          '#url' => Url::fromRoute('islandora_solr_metadata.config', [
+            'configuration_name' => $association,
+          ]),
+        ],
+        $associated_cmodels,
       ];
     }
     $form['table'] = [
