@@ -104,14 +104,18 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
   // Only grabbing the class, since we only use static methods here.
   $field_config = \Drupal::service('islandora_solr_metadata.field_config');
   $empty_field = get_class($field_config)::getEmptyField();
+  $empty_truncation = get_class($field_config)::getEmptyTruncation();
 
-  $apply_truncation_casts = function ($truncation) {
+  $apply_truncation_casts = function ($truncation) use ($empty_truncation) {
     $casts = [
       'max_length' => 'int',
       'word_safe' => 'bool',
       'ellipsis' => 'bool',
       'min_wordsafe_length' => 'int',
     ];
+
+    settype($truncation, 'array');
+    $truncation += $empty_truncation;
 
     foreach ($casts as $offset => $actual_type) {
       settype($truncation[$offset], $actual_type);
@@ -158,7 +162,7 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
       $new_field['truncation'] = $apply_truncation_casts($new_field['truncation']);
 
       assert(0 === \Drupal::service('config.typed')
-        ->createFromNameAndData('islandora_solr_metadata.truncation_options', $field['truncation'])
+        ->createFromNameAndData('islandora_solr_metadata.truncation_options', $new_field['truncation'])
         ->validate()
         ->count(), "$configuration_name/{$field['solr_field']} truncation config is valid.");
 
