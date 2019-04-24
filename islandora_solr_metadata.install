@@ -94,7 +94,11 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
   $associations = $db->select('islandora_solr_metadata_associations', 'isma')
     ->fields('isma', [])
     ->execute()
-    ->fetchAllAssoc('configuration_name', PDO::FETCH_ASSOC);
+    // XXX: Machine was not _strictly_ defined as being unique; it was only the
+    // form interactions which attempted to prevent duplicated... If there
+    // _does_ happen to be collisions between them, we'll only use one of 'em,
+    // here.
+    ->fetchAllAssoc('machine_name', PDO::FETCH_ASSOC);
   $config = \Drupal::configFactory()->getEditable('islandora_solr_metadata.configs');
 
   // Only grabbing the class, since we only use static methods here.
@@ -124,7 +128,9 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
       ->execute()
       ->fetchAll(PDO::FETCH_ASSOC);
     // Add the association proper.
-    $new_assoc = $field_config::getEmptyConfig();
+    $new_assoc = $field_config::getEmptyConfig() + [
+      'label' => $association['configuration_name'],
+    ];
     foreach ($old_cmodel_assoc as $old_assoc) {
       if ($old_assoc['configuration_id'] == $association['configuration_id']) {
         $new_assoc['cmodel_associations'][] = $old_assoc['cmodel'];
