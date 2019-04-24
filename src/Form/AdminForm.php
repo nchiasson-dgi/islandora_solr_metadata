@@ -8,7 +8,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Utility\Xss;
 
 /**
  * Admin form for solr metadata.
@@ -114,6 +113,7 @@ class AdminForm extends ConfigFormBase {
       '#size' => 100,
       '#title' => $this->t('Configuration name'),
       '#required' => TRUE,
+      '#description' => $this->t('A human-readable name for a new configuration.'),
     ];
     $form['add_configuration']['machine_name'] = [
       '#type' => 'machine_name',
