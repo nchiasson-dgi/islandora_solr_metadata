@@ -60,15 +60,14 @@ class AdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    $associations = array_keys($this->config('islandora_solr_metadata.configs')->get('configs'));
-    $form = [];
+    $associations = $this->config('islandora_solr_metadata.configs')->get('configs');
     $rows = [];
-    foreach ($associations as $association) {
-      $associated_cmodels = $this->config('islandora_solr_metadata.configs')->get("configs.$association.cmodel_associations");
+    foreach ($associations as $association => $info) {
+      $associated_cmodels = $info['cmodel_associations'];
       if (empty($associated_cmodels)) {
         $associated_cmodels = [
           '#type' => 'item',
-          '#markup' => $this->t('No content models currently associated'),
+          '#markup' => $this->t('No content models currently associated.'),
         ];
       }
       else {
@@ -78,12 +77,14 @@ class AdminForm extends ConfigFormBase {
         ];
       }
       $rows[] = [
-        'name' => [
-          '#type' => 'link',
-          '#title' => $association,
-          '#url' => Url::fromRoute('islandora_solr_metadata.config', ['configuration_name' => $association]),
-        ],
-        'associated_cmodels' => $associated_cmodels,
+          [
+            '#type' => 'link',
+            '#title' => $association,
+            '#url' => Url::fromRoute('islandora_solr_metadata.config', [
+              'configuration_name' => $association,
+            ]),
+          ],
+          $associated_cmodels,
       ];
     }
     $form['table'] = [
@@ -92,7 +93,6 @@ class AdminForm extends ConfigFormBase {
       '#header' => [
         $this->t('Name'),
         $this->t('Associated content models'),
-        $this->t('Machine name'),
       ],
       '#empty' => $this->t('No associations currently present.'),
     ] + $rows;
