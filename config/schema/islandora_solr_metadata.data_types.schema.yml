@@ -2,6 +2,9 @@ islandora_solr_metadata.config:
   type: mapping
   label: Metadata Display Config
   mapping:
+    label:
+      type: label
+      label: Configuration Name
     fields:
       type: sequence
       label: Display Fields

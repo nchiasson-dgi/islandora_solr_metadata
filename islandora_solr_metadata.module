@@ -91,7 +91,7 @@ function islandora_solr_metadata_field_configuration_access($configuration_name,
  */
 function islandora_solr_metadata_display_configuration_name($configuration_name) {
   return t('@configuration_name display configuration', [
-    '@configuration_name' => $configuration_name,
+    '@configuration_name' => \Drupal::config('islandora_solr_metadata.configs')->get("configs.$configuration_name.label"),
   ]);
 }
 
@@ -100,14 +100,17 @@ function islandora_solr_metadata_display_configuration_name($configuration_name)
  *
  * @param string $configuration_name
  *   The name of the configuration we are retrieving the title of.
+ * @param string $escaped_field_name
+ *   The (escaped) name of the field being manipulated.
  *
  * @return string
  *   The name of the configuration that is to be edited.
  */
 function islandora_solr_metadata_display_field_configuration_name($configuration_name, $escaped_field_name) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
-  return t('@field configuration', [
+  return t('@field configuration, in @display', [
     '@field' => islandora_solr_restore_slashes($escaped_field_name),
+    '@display' => \Drupal::config('islandora_solr_metadata.configs')->get("configs.$configuration_name.label"),
   ]);
 }
 

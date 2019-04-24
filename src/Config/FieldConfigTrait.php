@@ -41,6 +41,7 @@ trait FieldConfigTrait {
    */
   public static function getEmptyConfig() {
     $def = [
+      'label' => '',
       'cmodel_associations' => [],
       'description' => [
         'description_field' => '',
