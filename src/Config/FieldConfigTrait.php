@@ -41,6 +41,7 @@ trait FieldConfigTrait {
    */
   public static function getEmptyConfig() {
     $def = [
+      'label' => '',
       'cmodel_associations' => [],
       'description' => [
         'description_field' => '',
@@ -64,7 +65,7 @@ trait FieldConfigTrait {
    * @return array
    *   An empty truncation configuration.
    */
-  protected static function getEmptyTruncation() {
+  public static function getEmptyTruncation() {
     $def = [
       'truncation_type' => 'separate_value_option',
       'max_length' => 0,

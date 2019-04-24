@@ -94,20 +94,28 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
   $associations = $db->select('islandora_solr_metadata_associations', 'isma')
     ->fields('isma', [])
     ->execute()
-    ->fetchAllAssoc('configuration_name', PDO::FETCH_ASSOC);
+    // XXX: Machine was not _strictly_ defined as being unique; it was only the
+    // form interactions which attempted to prevent duplicated... If there
+    // _does_ happen to be collisions between them, we'll only use one of 'em,
+    // here.
+    ->fetchAllAssoc('machine_name', PDO::FETCH_ASSOC);
   $config = \Drupal::configFactory()->getEditable('islandora_solr_metadata.configs');
 
   // Only grabbing the class, since we only use static methods here.
   $field_config = \Drupal::service('islandora_solr_metadata.field_config');
   $empty_field = get_class($field_config)::getEmptyField();
+  $empty_truncation = get_class($field_config)::getEmptyTruncation();
 
-  $apply_truncation_casts = function ($truncation) {
+  $apply_truncation_casts = function ($truncation) use ($empty_truncation) {
     $casts = [
       'max_length' => 'int',
       'word_safe' => 'bool',
       'ellipsis' => 'bool',
       'min_wordsafe_length' => 'int',
     ];
+
+    settype($truncation, 'array');
+    $truncation += $empty_truncation;
 
     foreach ($casts as $offset => $actual_type) {
       settype($truncation[$offset], $actual_type);
@@ -123,8 +131,10 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
       ->condition('configuration_id', $association['configuration_id'])
       ->execute()
       ->fetchAll(PDO::FETCH_ASSOC);
+
     // Add the association proper.
     $new_assoc = $field_config::getEmptyConfig();
+    $new_assoc['label'] = $association['configuration_name'];
     foreach ($old_cmodel_assoc as $old_assoc) {
       if ($old_assoc['configuration_id'] == $association['configuration_id']) {
         $new_assoc['cmodel_associations'][] = $old_assoc['cmodel'];
@@ -152,7 +162,7 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
       $new_field['truncation'] = $apply_truncation_casts($new_field['truncation']);
 
       assert(0 === \Drupal::service('config.typed')
-        ->createFromNameAndData('islandora_solr_metadata.truncation_options', $field['truncation'])
+        ->createFromNameAndData('islandora_solr_metadata.truncation_options', $new_field['truncation'])
         ->validate()
         ->count(), "$configuration_name/{$field['solr_field']} truncation config is valid.");
 

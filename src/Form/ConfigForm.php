@@ -130,6 +130,22 @@ class ConfigForm extends ConfigFormBase {
       '#value' => $configuration_name,
     ];
 
+    $form['label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Configuration name'),
+      '#required' => TRUE,
+      '#default_value' => $this->config('islandora_solr_metadata.configs')->get("configs.$configuration_name.label"),
+      '#description' => $this->t('A human-readable name for this configuration.'),
+    ];
+    $form['machine_name'] = [
+      '#type' => 'machine_name',
+      '#default_value' => $configuration_name,
+      '#disabled' => TRUE,
+      '#machine_name' => [
+        'source' => ['label'],
+      ],
+    ];
+
     $form['islandora_solr_metadata_cmodels'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Content Models'),
@@ -431,14 +447,17 @@ class ConfigForm extends ConfigFormBase {
     if ($form_state->getTriggeringElement()['#value'] == 'Save configuration') {
       $config = $this->config('islandora_solr_metadata.configs');
 
-      $config->set("configs.$configuration_name.cmodel_associations", array_keys($form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options']));
+      $base = "configs.$configuration_name";
+
+      $config->set("$base.label", $form_state->getValue('label'));
+      $config->set("$base.cmodel_associations", array_keys($form_state->getCompleteForm()['islandora_solr_metadata_cmodels']['table_wrapper']['table']['#options']));
 
       $desc_info = $form_state->getValue([
         'islandora_solr_metadata_fields',
         'description_fieldset',
       ]);
 
-      $config->set("configs.$configuration_name.description", [
+      $config->set("$base.description", [
         'description_field' => $desc_info['available_solr_fields'],
         'description_label' => $desc_info['display_label'],
         'truncation' => $desc_info['truncation'],

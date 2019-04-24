@@ -60,15 +60,15 @@ class AdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    $associations = array_keys($this->config('islandora_solr_metadata.configs')->get('configs'));
-    $form = [];
+
+    $associations = $this->config('islandora_solr_metadata.configs')->get('configs');
     $rows = [];
-    foreach ($associations as $association) {
-      $associated_cmodels = $this->config('islandora_solr_metadata.configs')->get("configs.$association.cmodel_associations");
+    foreach ($associations as $association => $info) {
+      $associated_cmodels = $info['cmodel_associations'];
       if (empty($associated_cmodels)) {
         $associated_cmodels = [
           '#type' => 'item',
-          '#markup' => $this->t('No content models currently associated'),
+          '#markup' => $this->t('No content models currently associated.'),
         ];
       }
       else {
@@ -78,12 +78,17 @@ class AdminForm extends ConfigFormBase {
         ];
       }
       $rows[] = [
-        'name' => [
+        [
           '#type' => 'link',
-          '#title' => $association,
-          '#url' => Url::fromRoute('islandora_solr_metadata.config', ['configuration_name' => $association]),
+          '#title' => $info['label'],
+          '#url' => Url::fromRoute('islandora_solr_metadata.config', [
+            'configuration_name' => $association,
+          ]),
         ],
-        'associated_cmodels' => $associated_cmodels,
+        $associated_cmodels,
+        [
+          '#markup' => $association,
+        ],
       ];
     }
     $form['table'] = [
@@ -96,6 +101,7 @@ class AdminForm extends ConfigFormBase {
       ],
       '#empty' => $this->t('No associations currently present.'),
     ] + $rows;
+
     $form['add_configuration'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Add a configuration'),
@@ -106,13 +112,37 @@ class AdminForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#size' => 100,
       '#title' => $this->t('Configuration name'),
+      '#required' => TRUE,
+      '#description' => $this->t('A human-readable name for a new configuration.'),
     ];
-    $form['add_configuration']['save_content_model'] = [
+    $form['add_configuration']['machine_name'] = [
+      '#type' => 'machine_name',
+      '#machine_name' => [
+        'exists' => [
+          $this,
+          'configMachineNameExists',
+        ],
+        'source' => [
+          'add_configuration',
+          'configuration_name',
+        ],
+      ],
+      '#required' => TRUE,
+    ];
+    $form['add_configuration']['add_config'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add configuration'),
-      '#name' => 'islandora_solr_metadata_add_configuration',
     ];
     return $form;
+  }
+
+  /**
+   * Check for the existence of a config with the given machine name.
+   *
+   * As per #machine_name['exists'].
+   */
+  public function configMachineNameExists($value, array $element, FormStateInterface $form_state) {
+    return islandora_solr_metadata_configuration_exists($value);
   }
 
   /**
@@ -128,12 +158,18 @@ class AdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $form_state->loadInclude('islandora_solr_metadata', 'inc', 'includes/db');
-    $config_name = $form_state->getValue('configuration_name');
+    $machine_name = $form_state->getValue('machine_name');
+    $configuration_name = $form_state->getValue('configuration_name');
+
     $this->config('islandora_solr_metadata.configs')
-      ->set("configs.$config_name", $this->fieldConfig->getEmptyConfig())
+      ->set("configs.$machine_name", $this->fieldConfig->getEmptyConfig())
+      ->set("configs.$machine_name.label", $configuration_name)
       ->save();
-    drupal_set_message($this->t('A new empty configuration has been created for @config_name', ['@config_name' => $config_name]));
+
+    drupal_set_message($this->t('A new empty configuration has been created for @configuration_name (@machine_name).', [
+      '@configuration_name' => $configuration_name,
+      '@machine_name' => $machine_name,
+    ]));
   }
 
 }
