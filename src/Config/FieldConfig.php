@@ -129,7 +129,7 @@ class FieldConfig implements FieldConfigInterface, RefinableCacheableDependencyI
    * {@inheritdoc}
    */
   public function replaceFields(array $fields, $config_name) {
-    $this->config->clear("configs.$config_name.fields");
+    $this->config->set("configs.$config_name.fields", []);
     foreach ($fields as $field => $config) {
       $this->internalSetField($field, $config, $config_name);
     }

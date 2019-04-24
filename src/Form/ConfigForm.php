@@ -229,7 +229,7 @@ class ConfigForm extends ConfigFormBase {
     ];
     $form['islandora_solr_metadata_fields']['table_wrapper']['table'] = islandora_solr_metadata_management($form_state->get([
       'field_data',
-    ]));
+    ]), $configuration_name);
     if (count($form_state->get(['field_data']))) {
       $form['islandora_solr_metadata_fields']['table_wrapper']['remove_selected'] = [
         '#type' => 'button',
