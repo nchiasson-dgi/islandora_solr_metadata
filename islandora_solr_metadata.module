@@ -5,6 +5,8 @@
  * The main module file for the islandora_solr_metadata module.
  */
 
+use Drupal\Core\Cache\CacheableMetadata;
+
 /**
  * Implements hook_theme().
  */
@@ -172,4 +174,32 @@ function islandora_solr_metadata_description_callback(AbstractObject $object) {
   else {
     return FALSE;
   }
+}
+
+/**
+ * Implements hook_preprocess_islandora_dublin_core_display().
+ *
+ * While the metadata display system could use an overhaul this should let us
+ * invalidate the cache for now.
+ */
+function islandora_solr_metadata_preprocess_islandora_dublin_core_display(&$variables) {
+  $config = \Drupal::config('islandora_solr_metadata.configs');
+
+  CacheableMetadata::createFromRenderArray($variables)
+    ->addCacheableDependency($config)
+    ->applyTo($variables);
+}
+
+/**
+ * Implements hook_preprocess_islandora_dublin_core_description().
+ *
+ * While the description display system could use an overhaul this should let
+ * us invalidate the cache for now.
+ */
+function islandora_solr_metadata_preprocess_islandora_dublin_core_description(&$variables) {
+  $config = \Drupal::config('islandora_solr_metadata.configs');
+
+  CacheableMetadata::createFromRenderArray($variables)
+    ->addCacheableDependency($config)
+    ->applyTo($variables);
 }
