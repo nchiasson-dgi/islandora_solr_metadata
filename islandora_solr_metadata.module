@@ -123,7 +123,7 @@ function islandora_solr_metadata_islandora_metadata_display_info() {
   return [
     'islandora_solr_metadata' => [
       'label' => t('Islandora Solr Metadata'),
-      'description' => t('Metadata display driven by the Islandora Solr Search module'),
+      'description' => t('Metadata display driven by the Islandora Solr Search module.'),
       'metadata callback' => 'islandora_solr_metadata_display_callback',
       'description callback' => 'islandora_solr_metadata_description_callback',
       'configuration' => 'islandora_solr_metadata.metadata_display',

@@ -265,7 +265,7 @@ class ConfigForm extends ConfigFormBase {
     ];
     $form['islandora_solr_metadata_fields']['table_wrapper']['add_fieldset']['available_solr_fields'] = [
       '#type' => 'textfield',
-      '#description' => $this->t('A field from within Solr'),
+      '#description' => $this->t('A field from within Solr.'),
       '#size' => 105,
       '#autocomplete_route_name' => 'islandora_solr.autocomplete_luke',
       '#default_value' => '',
@@ -282,21 +282,22 @@ class ConfigForm extends ConfigFormBase {
     $form['islandora_solr_metadata_fields']['description_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Description'),
-      '#description' => $this->t("The field used for rendering the description beneath the object's content"),
+      '#description' => $this->t("The field used for rendering the description
+        beneath the object's content."),
       '#collapsed' => TRUE,
       '#collapsible' => FALSE,
     ];
     $description = $this->config('islandora_solr_metadata.configs')->get("configs.{$configuration_name}.description");
     $form['islandora_solr_metadata_fields']['description_fieldset']['available_solr_fields'] = [
       '#type' => 'textfield',
-      '#description' => $this->t('A field from within Solr'),
+      '#description' => $this->t('A field from within Solr.'),
       '#size' => 105,
       '#autocomplete_route_name' => 'islandora_solr.autocomplete_luke',
       '#default_value' => $description['description_field'],
     ];
     $form['islandora_solr_metadata_fields']['description_fieldset']['display_label'] = [
       '#type' => 'textfield',
-      '#description' => $this->t('A label for displaying'),
+      '#description' => $this->t('A label for displaying.'),
       '#size' => 45,
       '#default_value' => $description['description_label'],
       '#states' => [

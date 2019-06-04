@@ -13,19 +13,19 @@ use Drupal\Core\Database\Schema;
  */
 function islandora_solr_metadata_schema() {
   $schema['islandora_solr_metadata_cmodels'] = [
-    'description' => 'Table that stores content models associated to configurations',
+    'description' => 'Table that stores content models associated to configurations.',
     'fields' => [
       'configuration_name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-        'description' => 'The name of the configuration which this field belongs to',
+        'description' => 'The name of the configuration which this field belongs to.',
       ],
       'cmodel' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-        'description' => 'The name of the content model assigned to this configuration',
+        'description' => 'The name of the content model assigned to this configuration.',
       ],
     ],
     'primary_key' => ['configuration_name', ['cmodel', 191]],
@@ -84,7 +84,7 @@ function _islandora_solr_metadata_update_8001(Connection $db, Schema $schema) {
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-        'description' => 'The name of the configuration which this field belongs to',
+        'description' => 'The name of the configuration to which this field belongs.',
       ],
       [
         'primary_key' => ['configuration_name', ['cmodel', 191]],
