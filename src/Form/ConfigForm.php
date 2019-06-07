@@ -282,8 +282,7 @@ class ConfigForm extends ConfigFormBase {
     $form['islandora_solr_metadata_fields']['description_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Description'),
-      '#description' => $this->t("The field used for rendering the description
-        beneath the object's content."),
+      '#description' => $this->t("The field used for rendering the description beneath the object's content."),
       '#collapsed' => TRUE,
       '#collapsible' => FALSE,
     ];
