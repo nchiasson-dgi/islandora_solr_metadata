@@ -22,7 +22,7 @@ function islandora_solr_metadata_get_associations_by_cmodels(array $cmodels) {
   }
   $results = db_select('islandora_solr_metadata_cmodels', 'i')
     ->fields('i', ['configuration_name'])
-    ->condition('cmodel', $cmodels)
+    ->condition('cmodel', $cmodels, 'IN')
     ->execute()
     ->fetchAllAssoc('configuration_name', PDO::FETCH_ASSOC);
   return $results;
