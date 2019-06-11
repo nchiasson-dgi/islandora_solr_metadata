@@ -30,7 +30,7 @@ class DeleteConfigForm extends ConfirmFormBase {
    */
   public function getQuestion() {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
-    return t('Are you sure you want to delete the @configuration_name display configuration?', [
+    return $this->t('Are you sure you want to delete the @configuration_name display configuration?', [
       '@configuration_name' => $this->configurationName,
     ]);
   }
@@ -46,21 +46,21 @@ class DeleteConfigForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getDescription() {
-    return t('This action cannot be undone.');
+    return $this->t('This action cannot be undone.');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getConfirmText() {
-    return t('Delete');
+    return $this->t('Delete');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCancelText() {
-    return t('Cancel');
+    return $this->t('Cancel');
   }
 
   /**
@@ -78,7 +78,7 @@ class DeleteConfigForm extends ConfirmFormBase {
     module_load_include('inc', 'islandora_solr_metadata', 'includes/db');
     islandora_solr_metadata_delete_configuration($this->configurationName);
     $form_state->setRedirect('islandora_solr_metadata.metadata_display');
-    drupal_set_message(t('The @configuration_name display configuration has been deleted!', [
+    drupal_set_message($this->t('The @configuration_name display configuration has been deleted!', [
       '@configuration_name' => $this->configurationName,
     ]));
   }
