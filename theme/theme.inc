@@ -109,6 +109,10 @@ function template_process_islandora_solr_metadata_display(array &$variables) {
     '@id' => $variables['islandora_object']->id,
     '!reloading' => '<a href="" onclick="window.location.reload(true)">' . t('reloading') . '</a>',
   ));
+  dsm($variables, "TEMP PROCESS METADATA DISPLAY");
+  $metadata_qp = new IslandoraSolrQueryProcessor();
+  $metadata_qp->buildAndExecuteQuery('beach', array('type'=>'edismax', 'q'=>'islandora/search/beach','islandora_solr_search_navigation'=>1));
+  dsm($metadata_qp, "METADATA QP");
 }
 
 /**
